@@ -1,4 +1,3 @@
-
 use super::schema::status;
 
 #[derive(Queryable)]

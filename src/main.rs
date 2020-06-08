@@ -8,19 +8,19 @@ use actix_web::HttpServer;
 use actix_web::{App, HttpResponse, Responder};
 use askama::Template;
 use diesel::r2d2::{ConnectionManager, Pool};
-use diesel::{Connection, MysqlConnection, RunQueryDsl, ExpressionMethods};
+use diesel::{Connection, ExpressionMethods, MysqlConnection, RunQueryDsl};
 use dotenv::dotenv;
 use http::status::StatusCode;
 use reqwest::Client;
 use std::env;
 
-use std::time::{Duration, Instant};
-use diesel::query_dsl::methods::{LimitDsl, OrderDsl};
-use chrono::{DateTime, Date, Utc, Timelike, Datelike};
-use std::ops::Sub;
-use std::convert::TryInto;
+use chrono::Utc;
 use core::fmt;
+use diesel::query_dsl::methods::OrderDsl;
 use serde::export::Formatter;
+use std::convert::TryInto;
+use std::ops::Sub;
+use std::time::{Duration, Instant};
 
 #[macro_use]
 extern crate diesel;
@@ -43,7 +43,6 @@ fn get_db_connection() -> Database {
         .expect("Unable to run migrations");
 
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
-
 
     diesel::r2d2::Pool::builder()
         .max_size(4)
@@ -90,7 +89,7 @@ enum ProjectStatusTypes {
     Operational,
     Failing,
     Failed,
-    Unknown
+    Unknown,
 }
 
 impl fmt::Display for ProjectStatusTypes {
@@ -105,7 +104,7 @@ impl fmt::Display for ProjectStatusTypes {
 }
 
 struct StatusDay<'a> {
-    status: Vec<&'a Status>
+    status: Vec<&'a Status>,
 }
 
 impl StatusDay<'_> {
@@ -150,24 +149,28 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
 
     let mut p = Vec::new();
     for proj in projects_list {
-
         let day_count = 5;
         let mut days: Vec<StatusDay> = Vec::with_capacity(day_count);
         for x in (0..day_count).rev() {
             let now = Utc::now().date();
-            let then = now.sub(chrono::Duration::days(x.try_into().unwrap())).naive_utc();
+            let then = now
+                .sub(chrono::Duration::days(x.try_into().unwrap()))
+                .naive_utc();
             log::info!("Date: {} - {} = {}", now, x, then);
 
-            let status_on_day = status_list.iter().filter(|s| s.project == proj.id && s.created.date() == then).collect();
+            let status_on_day = status_list
+                .iter()
+                .filter(|s| s.project == proj.id && s.created.date() == then)
+                .collect();
 
             days.push(StatusDay {
-                status: status_on_day
+                status: status_on_day,
             });
         }
 
         p.push(ProjectStatus {
             project: proj,
-            days: days
+            days,
         })
     }
 
