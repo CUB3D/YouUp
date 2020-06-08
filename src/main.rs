@@ -103,6 +103,7 @@ impl fmt::Display for ProjectStatusTypes {
     }
 }
 
+#[derive(Clone)]
 struct StatusDay<'a> {
     status: Vec<&'a Status>,
 }
@@ -123,15 +124,29 @@ impl StatusDay<'_> {
     }
 }
 
+const HISTORY_SIZE: usize = 30;
+
 struct ProjectStatus<'a> {
     project: Project,
     days: Vec<StatusDay<'a>>,
+    today: StatusDay<'a>,
+}
+
+impl ProjectStatus<'_> {
+    fn has_description(&self) -> bool {
+        self.project.description.is_some()
+    }
+
+    fn get_desc(&self) -> &String {
+        self.project.description.as_ref().expect("")
+    }
 }
 
 #[derive(Template)]
 #[template(path = "index.html")]
 pub struct IndexTemplate<'a> {
     projects: Vec<ProjectStatus<'a>>,
+    history_size: usize
 }
 
 pub async fn root(pool: Data<Database>) -> impl Responder {
@@ -149,9 +164,8 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
 
     let mut p = Vec::new();
     for proj in projects_list {
-        let day_count = 5;
-        let mut days: Vec<StatusDay> = Vec::with_capacity(day_count);
-        for x in (0..day_count).rev() {
+        let mut days: Vec<StatusDay> = Vec::with_capacity(HISTORY_SIZE);
+        for x in (0..HISTORY_SIZE).rev() {
             let now = Utc::now().date();
             let then = now
                 .sub(chrono::Duration::days(x.try_into().unwrap()))
@@ -168,13 +182,17 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
             });
         }
 
+        let today = days.last().unwrap().clone();
+
         p.push(ProjectStatus {
             project: proj,
             days,
+            today,
         })
     }
 
-    let template = IndexTemplate { projects: p }
+    let template = IndexTemplate { projects: p ,
+    history_size: HISTORY_SIZE}
         .render()
         .expect("Unable to render template");
 

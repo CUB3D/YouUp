@@ -3,6 +3,7 @@ table! {
         id -> Integer,
         url -> Varchar,
         name -> Varchar,
+        description -> Nullable<Text>,
         created -> Datetime,
     }
 }

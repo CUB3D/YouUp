@@ -5,6 +5,7 @@ pub struct Project {
     pub id: i32,
     pub url: String,
     pub name: String,
+    pub description: Option<String>,
     pub created: chrono::NaiveDateTime,
 }
 
