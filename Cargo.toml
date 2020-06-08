@@ -1,0 +1,30 @@
+[package]
+name = "you_up"
+version = "0.1.0"
+authors = ["CUB3D <callumthom11@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-rt = "1.1.1"
+actix-web = "2.0"
+actix-files = "0.2"
+
+serde = { version = "1.0.106", features = ["derive"] }
+
+askama = "0.8"
+
+chrono = "0.4.11"
+
+diesel = { version = "1.4.4", features = ["r2d2", "mysql", "chrono"] }
+diesel_migrations = "1.4.0"
+
+dotenv = "0.9.0"
+
+log = "0.4.8"
+env_logger = "0.7.1"
+
+reqwest = "0.10.6"
+http = "0.2.1"
+tokio = { version = "0.2.21", features = ["full"] }

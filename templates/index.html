@@ -1,0 +1,23 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+  <div class="container">
+    {% for proj_status in projects %}
+      <div class="card mt-2 mb-2">
+        <div class="card-header">
+          <h5 class="card-title">{{ proj_status.project.name }}</h5>
+        </div>
+        <div class="card-body">
+          {% for stat in proj_status.status %}
+
+            {% if stat.status_code == 200 %}
+              <span class="badge badge-success">.</span>
+            {% else %}
+              <span class="badge badge-danger">.</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}
