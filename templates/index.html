@@ -4,16 +4,19 @@
   <div class="container">
     {% for proj_status in projects %}
       <div class="card mt-2 mb-2">
-        <div class="card-header">
-          <h5 class="card-title">{{ proj_status.project.name }}</h5>
+        <div class="card-header"><h5 class="card-title">{{ proj_status.project.name }}</h5>
         </div>
-        <div class="card-body">
-          {% for stat in proj_status.status %}
+        <div class="card-body d-flex flex-row justify-content-around">
+          {% for day in proj_status.days %}
 
-            {% if stat.status_code == 200 %}
-              <span class="badge badge-success">.</span>
-            {% else %}
-              <span class="badge badge-danger">.</span>
+            {% if day.get_overall_status().to_string() == "Unknown" %}
+              <div class="ml-1 mr-1" style="width: 25px; height: 100px; background: #808080" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>No information</p>"></div>
+            {% else if day.get_overall_status().to_string() == "Failed" %}
+              <div class="ml-1 mr-1" style="width: 25px; height: 100px; background: #FF0000" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>Failed</p>"></div>
+            {% else if day.get_overall_status().to_string() == "Failing" %}
+              <div class="ml-1 mr-1" style="width: 25px; height: 100px; background: #FFFF00" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>Failing</p>"></div>
+            {% else if day.get_overall_status().to_string() == "Operational" %}
+              <div class="ml-1 mr-1" style="width: 25px; height: 100px; background: #00FF00" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>No downtime</p>"></div>
             {% endif %}
           {% endfor %}
         </div>

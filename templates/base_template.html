@@ -6,7 +6,15 @@
 
   <title>{% block title %}YouUp{% endblock %}</title>
 
+  <script src="/static/popper.min.js"></script>
+  <script src="/static/jquery-3.3.1.slim.min.js"></script>
+  <script src="/static/bootstrap.min.js"></script>
   <link rel="stylesheet" href="/static/bootstrap.min.css">
+  <script>
+  window.onload = () => {
+    $('[data-toggle="tooltip"]').tooltip({html: true})
+  }
+  </script>
 </head>
 <body>{% block content %}{% endblock %}</body>
 </html>

@@ -8,13 +8,19 @@ use actix_web::HttpServer;
 use actix_web::{App, HttpResponse, Responder};
 use askama::Template;
 use diesel::r2d2::{ConnectionManager, Pool};
-use diesel::{Connection, MysqlConnection, RunQueryDsl};
+use diesel::{Connection, MysqlConnection, RunQueryDsl, ExpressionMethods};
 use dotenv::dotenv;
 use http::status::StatusCode;
 use reqwest::Client;
 use std::env;
 
 use std::time::{Duration, Instant};
+use diesel::query_dsl::methods::{LimitDsl, OrderDsl};
+use chrono::{DateTime, Date, Utc, Timelike, Datelike};
+use std::ops::Sub;
+use std::convert::TryInto;
+use core::fmt;
+use serde::export::Formatter;
 
 #[macro_use]
 extern crate diesel;
@@ -65,12 +71,6 @@ async fn run_update_job(db: Database) {
             let req_duration = req_start_time.elapsed();
             let status = req.map(|v| v.status()).unwrap_or(StatusCode::NOT_FOUND);
 
-            if status.is_success() {
-                log::warn!("up: {:?}", status);
-            } else {
-                log::warn!("Down: ");
-            }
-
             diesel::insert_into(stat::table)
                 .values(NewStatus {
                     project: domain.id,
@@ -86,9 +86,47 @@ async fn run_update_job(db: Database) {
     }
 }
 
+enum ProjectStatusTypes {
+    Operational,
+    Failing,
+    Failed,
+    Unknown
+}
+
+impl fmt::Display for ProjectStatusTypes {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            ProjectStatusTypes::Operational => "Operational",
+            ProjectStatusTypes::Failing => "Failing",
+            ProjectStatusTypes::Failed => "Failed",
+            ProjectStatusTypes::Unknown => "Unknown",
+        })
+    }
+}
+
+struct StatusDay<'a> {
+    status: Vec<&'a Status>
+}
+
+impl StatusDay<'_> {
+    fn get_overall_status(&self) -> ProjectStatusTypes {
+        if self.status.is_empty() {
+            ProjectStatusTypes::Unknown
+        } else if self.status.iter().all(|x| x.status_code == 200) {
+            ProjectStatusTypes::Operational
+        } else if self.status.iter().all(|x| x.status_code != 200) {
+            ProjectStatusTypes::Failed
+        } else {
+            //TODO: apply more logic here, should really only be failed if more fail than success (based on amount of time)
+
+            ProjectStatusTypes::Failing
+        }
+    }
+}
+
 struct ProjectStatus<'a> {
     project: Project,
-    status: Vec<&'a Status>,
+    days: Vec<StatusDay<'a>>,
 }
 
 #[derive(Template)]
@@ -101,19 +139,35 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
     use self::schema::projects::dsl::*;
     use self::schema::status as stat;
 
+    //TODO: make number of days variable
     let projects_list = projects
         .load::<Project>(&pool.get().unwrap())
         .expect("Unable to load projects");
     let status_list = stat::dsl::status
+        .order(stat::dsl::time.desc())
         .load::<Status>(&pool.get().unwrap())
         .expect("Unable to load status");
 
     let mut p = Vec::new();
-    for x in projects_list {
-        let y: Vec<&Status> = status_list.iter().filter(|s| s.project == x.id).collect();
+    for proj in projects_list {
+
+        let day_count = 5;
+        let mut days: Vec<StatusDay> = Vec::with_capacity(day_count);
+        for x in (0..day_count).rev() {
+            let now = Utc::now().date();
+            let then = now.sub(chrono::Duration::days(x.try_into().unwrap())).naive_utc();
+            log::info!("Date: {} - {} = {}", now, x, then);
+
+            let status_on_day = status_list.iter().filter(|s| s.project == proj.id && s.created.date() == then).collect();
+
+            days.push(StatusDay {
+                status: status_on_day
+            });
+        }
+
         p.push(ProjectStatus {
-            project: x,
-            status: y,
+            project: proj,
+            days: days
         })
     }
 
@@ -141,7 +195,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(Compress::default())
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:8102")?
     .run()
     .await
 }
