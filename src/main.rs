@@ -1,20 +1,19 @@
 use crate::models::{NewStatus, Project, Status};
 use actix_files::Files;
 use actix_rt::spawn;
-use actix_web::dev::Url;
+
 use actix_web::middleware::{Compress, Logger};
 use actix_web::web::{resource, Data};
 use actix_web::HttpServer;
 use actix_web::{App, HttpResponse, Responder};
 use askama::Template;
-use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::{Connection, MysqlConnection, RunQueryDsl};
 use dotenv::dotenv;
 use http::status::StatusCode;
 use reqwest::Client;
 use std::env;
-use std::thread::sleep;
+
 use std::time::{Duration, Instant};
 
 #[macro_use]
@@ -32,27 +31,25 @@ fn get_db_connection() -> Database {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let conn = MysqlConnection::establish(&database_url)
-        .expect(&format!("Error connecting to {}", database_url));
+        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url));
 
     embedded_migrations::run_with_output(&conn, &mut std::io::stdout())
         .expect("Unable to run migrations");
 
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
 
-    let pool = diesel::r2d2::Pool::builder()
+
+    diesel::r2d2::Pool::builder()
         .max_size(4)
         .test_on_check_out(true)
         .build(manager)
-        .unwrap();
-
-    pool
+        .unwrap()
 }
 
 async fn run_update_job(db: Database) {
     let c = Client::builder().build().unwrap();
 
     loop {
-        use self::models::Project;
         use self::schema::projects::dsl::*;
         use self::schema::status as stat;
 
@@ -101,7 +98,6 @@ pub struct IndexTemplate<'a> {
 }
 
 pub async fn root(pool: Data<Database>) -> impl Responder {
-    use self::models::Project;
     use self::schema::projects::dsl::*;
     use self::schema::status as stat;
 
