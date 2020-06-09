@@ -15,7 +15,7 @@ use crate::project_status::ProjectStatusTypes;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
 use crate::update_job::run_update_job;
-use chrono::{Timelike, Utc};
+use chrono::{Timelike, Utc, NaiveDateTime};
 use diesel::query_dsl::methods::OrderDsl;
 use std::cmp::max;
 use std::convert::TryInto;
@@ -35,7 +35,7 @@ pub mod template_index;
 pub mod template_tooltip;
 pub mod update_job;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Downtime {
     pub duration: String,
 }
@@ -95,14 +95,68 @@ pub struct ProjectStatus<'a> {
     pub today: StatusDay<'a>,
 }
 
+#[cfg(test)]
+mod test {
+    use crate::{compute_downtime_periods, Downtime};
+    use crate::models::Status;
+    use chrono::Utc;
+    use std::ops::Sub;
+
+    #[actix_rt::test]
+    async fn compute_simple_downtime() {
+        let x = compute_downtime_periods(&vec![
+            &Status {
+                created: Utc::now().naive_utc(),
+                status_code: 200,
+                id: 0,
+                project: 0,
+                time: 0
+            }
+        ]).await;
+
+        assert!(x.is_empty())
+    }
+
+    #[actix_rt::test]
+    async fn compute_downtime() {
+        let x = compute_downtime_periods(&vec![
+            &Status {
+                created: Utc::now().naive_utc(),
+                status_code: 200,
+                id: 3,
+                project: 0,
+                time: 10
+            },
+            &Status {
+                created: Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
+                status_code: 503,
+                id: 2,
+                project: 0,
+                time: 10
+            },
+            &Status {
+                created: Utc::now().naive_utc().sub(chrono::Duration::hours(2)),
+                status_code: 200,
+                id: 1,
+                project: 0,
+                time: 10
+            }
+        ]).await;
+
+        assert!(x.eq(&vec![Downtime {
+            duration: "0 hours and 59 minutes".into()
+        }]));
+    }
+}
+
 async fn compute_downtime_periods(status_on_day: &[&Status]) -> Vec<Downtime> {
     let mut downtime = Vec::new();
-    let mut downtime_period_start = None;
+    let mut downtime_period_start: Option<NaiveDateTime> = None;
 
     for item in status_on_day.iter() {
         if item.is_success() {
             if let Some(tmp) = downtime_period_start {
-                let period_duration = item.created.signed_duration_since(tmp);
+                let period_duration = tmp.signed_duration_since(item.created);
                 downtime.push(Downtime {
                     duration: format!(
                         "{} hours and {} minutes",
