@@ -1,0 +1,6 @@
+<p>{{ day.date }}</p>
+{% if day.downtime.is_empty() %}
+  <p>No downtime</p>
+{% else %}
+  <p>Some downtime</p>
+{% endif %}

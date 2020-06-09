@@ -106,6 +106,8 @@ impl fmt::Display for ProjectStatusTypes {
 #[derive(Clone)]
 struct StatusDay<'a> {
     status: Vec<&'a Status>,
+    date: String,
+    downtime: Vec<String>,
 }
 
 impl StatusDay<'_> {
@@ -121,6 +123,21 @@ impl StatusDay<'_> {
 
             ProjectStatusTypes::Failing
         }
+    }
+
+    fn get_status_colour(&self) -> String {
+        match self.get_overall_status() {
+            ProjectStatusTypes::Operational => "#00FF00".into(),
+            ProjectStatusTypes::Failing => "#FFAA00".into(),
+            ProjectStatusTypes::Failed => "#FF0000".into(),
+            ProjectStatusTypes::Unknown => "#808080".into(),
+        }
+    }
+
+    fn get_tooltip(&self) -> String {
+        StatusTooltipTemplate { day: self.clone() }
+            .render()
+            .expect("Unable to render tooltip")
     }
 }
 
@@ -146,14 +163,19 @@ impl ProjectStatus<'_> {
 #[template(path = "index.html")]
 pub struct IndexTemplate<'a> {
     projects: Vec<ProjectStatus<'a>>,
-    history_size: usize
+    history_size: usize,
+}
+
+#[derive(Template)]
+#[template(path = "status_tooltip.html")]
+pub struct StatusTooltipTemplate<'a> {
+    day: StatusDay<'a>,
 }
 
 pub async fn root(pool: Data<Database>) -> impl Responder {
     use self::schema::projects::dsl::*;
     use self::schema::status as stat;
 
-    //TODO: make number of days variable
     let projects_list = projects
         .load::<Project>(&pool.get().unwrap())
         .expect("Unable to load projects");
@@ -170,7 +192,6 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
             let then = now
                 .sub(chrono::Duration::days(x.try_into().unwrap()))
                 .naive_utc();
-            log::info!("Date: {} - {} = {}", now, x, then);
 
             let status_on_day = status_list
                 .iter()
@@ -179,6 +200,8 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
 
             days.push(StatusDay {
                 status: status_on_day,
+                date: then.format("%Y/%m/%d").to_string(),
+                downtime: Vec::new(),
             });
         }
 
@@ -191,10 +214,12 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
         })
     }
 
-    let template = IndexTemplate { projects: p ,
-    history_size: HISTORY_SIZE}
-        .render()
-        .expect("Unable to render template");
+    let template = IndexTemplate {
+        projects: p,
+        history_size: HISTORY_SIZE,
+    }
+    .render()
+    .expect("Unable to render template");
 
     HttpResponse::Ok().body(template)
 }

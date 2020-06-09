@@ -2,34 +2,32 @@
 
 {% block content %}
   <div class="container">
-    <h2>Current Status</h2>
-    <p>Data from the past {{ history_size }} days.</p>
-
+    <div class="d-flex flex-row">
+      <h2 class="mr-auto">Current Status</h2>
+      <p class="align-self-end mb-0">Data from the past {{ history_size }} days.</p>
+    </div>
     {% for proj_status in projects %}
      <div class="card mt-2 mb-2">
         <div class="card-header">
-          <h5 class="card-title">{{ proj_status.project.name }}</h5>
-          {% if proj_status.has_description() %}
-            <h5 class="card-title">{{ proj_status.get_desc() }}</h5>
-          {% endif %}
-          <h5 class="card-title">{{ proj_status.today.get_overall_status() }}</h5>
+          <div class="d-flex flex-row">
+              <h5 class="card-title">{{ proj_status.project.name }}</h5>
+              {% if proj_status.has_description() %}
+                <img class="ml-1 mr-1" src="/static/images/help-circle.svg" width="24px" height="24px" data-toggle="tooltip" data-placement="top" data-html="true" title="{{ proj_status.get_desc() }}"/>
+              {% endif %}
+            <div class="mr-auto"></div>
+            <h5 class="card-title" style="color: {{ proj_status.today.get_status_colour() }}">{{ proj_status.today.get_overall_status() }}</h5>
+          </div>
         </div>
       <div class="card-body">
         <div class="d-flex flex-row justify-content-around">
           {% for day in proj_status.days %}
-            {% if day.get_overall_status().to_string() == "Unknown" %}
-              <div class="ml-1 mr-1" style="width: 10px; height: 50px; background: #808080" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>No information</p>"></div>
-            {% else if day.get_overall_status().to_string() == "Failed" %}
-              <div class="ml-1 mr-1" style="width: 10px; height: 50px; background: #FF0000" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>Failed</p>"></div>
-            {% else if day.get_overall_status().to_string() == "Failing" %}
-              <div class="ml-1 mr-1" style="width: 10px; height: 50px; background: #FFFF00" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>Failing</p>"></div>
-            {% else if day.get_overall_status().to_string() == "Operational" %}
-              <div class="ml-1 mr-1" style="width: 10px; height: 50px; background: #00FF00" data-toggle="tooltip" data-placement="top" data-html="true" title="<p>08/06/2020</p><p>No downtime</p>"></div>
-            {% endif %}
+            <div class="ml-1 mr-1" style="width: 10px; height: 50px; background: {{ day.get_status_colour() }}" data-toggle="tooltip" data-placement="top" data-html="true" title="{{ day.get_tooltip() }}"></div>
           {% endfor %}
         </div>
-        <p>{{ history_size }} days ago</p>
-        <p>Today</p>
+        <div class="d-flex flex-row">
+          <p class="mr-auto">{{ history_size }} days ago</p>
+          <p>Today</p>
+        </div>
         </div>
       </div>
     {% endfor %}
