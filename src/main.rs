@@ -14,13 +14,13 @@ use crate::db::Database;
 use crate::project_status::ProjectStatusTypes;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
+use crate::update_job::run_update_job;
 use chrono::{Timelike, Utc};
 use diesel::query_dsl::methods::OrderDsl;
-use std::convert::TryInto;
-use std::ops::Sub;
-use crate::update_job::run_update_job;
-use std::env;
 use std::cmp::max;
+use std::convert::TryInto;
+use std::env;
+use std::ops::Sub;
 
 #[macro_use]
 extern crate diesel;
@@ -34,7 +34,6 @@ pub mod schema;
 pub mod template_index;
 pub mod template_tooltip;
 pub mod update_job;
-
 
 #[derive(Clone)]
 pub struct Downtime {
@@ -96,9 +95,7 @@ pub struct ProjectStatus<'a> {
     pub today: StatusDay<'a>,
 }
 
-async fn compute_downtime_periods(
-    status_on_day: &Vec<&Status>,
-) -> Vec<Downtime> {
+async fn compute_downtime_periods(status_on_day: &Vec<&Status>) -> Vec<Downtime> {
     let mut downtime = Vec::new();
     let mut downtime_period_start = None;
 
@@ -165,7 +162,10 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
         .load::<Status>(&pool.get().unwrap())
         .expect("Unable to load status");
 
-    let history_size = env::var("HISTORY_SIZE").unwrap_or_else(|_| "30".into()).parse::<usize>().unwrap_or(30);
+    let history_size = env::var("HISTORY_SIZE")
+        .unwrap_or_else(|_| "30".into())
+        .parse::<usize>()
+        .unwrap_or(30);
 
     let mut p = Vec::new();
     for proj in projects_list {
