@@ -95,7 +95,7 @@ pub struct ProjectStatus<'a> {
     pub today: StatusDay<'a>,
 }
 
-async fn compute_downtime_periods(status_on_day: &Vec<&Status>) -> Vec<Downtime> {
+async fn compute_downtime_periods(status_on_day: &[&Status]) -> Vec<Downtime> {
     let mut downtime = Vec::new();
     let mut downtime_period_start = None;
 
@@ -114,7 +114,7 @@ async fn compute_downtime_periods(status_on_day: &Vec<&Status>) -> Vec<Downtime>
             }
         } else {
             // If we are currently down then we will skip until we find the next up
-            if let None = downtime_period_start {
+            if downtime_period_start.is_none() {
                 downtime_period_start = Some(item.created)
             }
         }
@@ -207,7 +207,7 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
 
     let template = IndexTemplate {
         projects: p,
-        history_size: history_size,
+        history_size,
     }
     .render()
     .expect("Unable to render template");
