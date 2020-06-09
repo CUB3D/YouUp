@@ -2,5 +2,8 @@
 {% if day.downtime.is_empty() %}
   <p>No downtime</p>
 {% else %}
-  <p>Some downtime</p>
+  {% for downtime in day.downtime %}
+    <p>{{ downtime.duration}}</p>
+  {% endfor %}
 {% endif %}
+<p>Average request delay: <span>{{ day.avg_request_time() }}ms</span></p>

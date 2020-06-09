@@ -1,5 +1,9 @@
+use crate::ProjectStatus;
+use askama::Template;
+
 #[derive(Template)]
-#[template(path = "status_tooltip.html")]
-pub struct StatusTooltipTemplate<'a> {
-    day: StatusDay<'a>,
+#[template(path = "index.html")]
+pub struct IndexTemplate<'a> {
+    pub projects: Vec<ProjectStatus<'a>>,
+    pub history_size: usize,
 }
