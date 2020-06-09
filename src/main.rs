@@ -269,6 +269,10 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
     HttpResponse::Ok().body(template)
 }
 
+//TODO: email alerts
+//TODO: admin ui
+//TODO: incident tracking
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
