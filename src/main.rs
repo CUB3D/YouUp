@@ -33,6 +33,7 @@ pub mod project_status;
 pub mod schema;
 pub mod template_index;
 pub mod template_tooltip;
+pub mod time_formatter;
 pub mod update_job;
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -158,11 +159,7 @@ async fn compute_downtime_periods(status_on_day: &[&Status]) -> Vec<Downtime> {
             if let Some(tmp) = downtime_period_start {
                 let period_duration = tmp.signed_duration_since(item.created);
                 downtime.push(Downtime {
-                    duration: format!(
-                        "{} hours and {} minutes",
-                        period_duration.num_hours(),
-                        period_duration.num_minutes()
-                    ),
+                    duration: time_formatter::format_duration(&period_duration),
                 });
                 downtime_period_start = None;
             }
@@ -192,11 +189,7 @@ async fn compute_downtime_periods(status_on_day: &[&Status]) -> Vec<Downtime> {
         let period_duration = clamped_end_of_day.signed_duration_since(tmp);
         if period_duration.num_minutes() > 0 {
             downtime.push(Downtime {
-                duration: format!(
-                    "{} hours and {} minutes",
-                    period_duration.num_hours(),
-                    period_duration.num_minutes()
-                ),
+                duration: time_formatter::format_duration(&period_duration),
             });
         }
     }
@@ -280,7 +273,9 @@ async fn main() -> std::io::Result<()> {
 
     let db = db::get_db_connection();
 
-    spawn(run_update_job(db.clone()));
+    if env::var("UPDATE").unwrap_or("1".to_string()) == "1" {
+        spawn(run_update_job(db.clone()));
+    }
 
     HttpServer::new(move || {
         App::new()
