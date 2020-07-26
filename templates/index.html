@@ -45,6 +45,8 @@
             perf_labels.push({{status.id}});
         {% endfor %}
 
+        let smallest_data = Math.max(0, Math.min(...perf_data) - Math.max(...perf_data) * 0.05);
+
         let ctx = document.getElementById('{{ proj_status.project.id }}-performance');
         new Chart(ctx, {
                 type: 'line',
@@ -65,7 +67,7 @@
                     yAxes: [{
                         display: true,
                         ticks: {
-                            suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+                            suggestedMin: smallest_data,    // minimum will be 0, unless there is a lower value.
                         }
                     }]
                 }
