@@ -15,9 +15,8 @@ use crate::project_status::ProjectStatusTypes;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
 use crate::update_job::run_update_job;
-use chrono::{Timelike, Utc, NaiveDateTime};
+use chrono::{NaiveDateTime, Timelike, Utc};
 use diesel::query_dsl::methods::OrderDsl;
-use std::cmp::max;
 use std::convert::TryInto;
 use std::env;
 use std::ops::Sub;
@@ -86,7 +85,7 @@ impl StatusDay<'_> {
     }
 
     fn get_chart_status(&self) -> &[&Status] {
-        &self.status[max(self.status.len() as i32 - 100, 0) as usize..self.status.len()]
+        &self.status //[max(self.status.len() - 100, 0usize)..self.status.len()]
     }
 }
 
@@ -98,22 +97,21 @@ pub struct ProjectStatus<'a> {
 
 #[cfg(test)]
 mod test {
-    use crate::{compute_downtime_periods, Downtime};
     use crate::models::Status;
+    use crate::{compute_downtime_periods, Downtime};
     use chrono::Utc;
     use std::ops::Sub;
 
     #[actix_rt::test]
     async fn compute_simple_downtime() {
-        let x = compute_downtime_periods(&vec![
-            &Status {
-                created: Utc::now().naive_utc(),
-                status_code: 200,
-                id: 0,
-                project: 0,
-                time: 0
-            }
-        ]).await;
+        let x = compute_downtime_periods(&vec![&Status {
+            created: Utc::now().naive_utc(),
+            status_code: 200,
+            id: 0,
+            project: 0,
+            time: 0,
+        }])
+        .await;
 
         assert!(x.is_empty())
     }
@@ -126,23 +124,24 @@ mod test {
                 status_code: 200,
                 id: 3,
                 project: 0,
-                time: 10
+                time: 10,
             },
             &Status {
                 created: Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
                 status_code: 503,
                 id: 2,
                 project: 0,
-                time: 10
+                time: 10,
             },
             &Status {
                 created: Utc::now().naive_utc().sub(chrono::Duration::hours(2)),
                 status_code: 200,
                 id: 1,
                 project: 0,
-                time: 10
-            }
-        ]).await;
+                time: 10,
+            },
+        ])
+        .await;
 
         assert!(x.eq(&vec![Downtime {
             duration: "0 hours and 59 minutes".into()
@@ -158,6 +157,11 @@ async fn compute_downtime_periods(status_on_day: &[&Status]) -> Vec<Downtime> {
         if item.is_success() {
             if let Some(tmp) = downtime_period_start {
                 let period_duration = tmp.signed_duration_since(item.created);
+
+                if period_duration.num_seconds() < 0 {
+                    println!("Invalid donwntime, from {:?} to {:?}", item.created, tmp);
+                }
+
                 downtime.push(Downtime {
                     duration: time_formatter::format_duration(&period_duration),
                 });
@@ -205,7 +209,7 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
         .load::<Project>(&pool.get().unwrap())
         .expect("Unable to load projects");
     let status_list = stat::dsl::status
-        .order(stat::dsl::time.desc())
+        .order(stat::dsl::created.desc())
         .load::<Status>(&pool.get().unwrap())
         .expect("Unable to load status");
 

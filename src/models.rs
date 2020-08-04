@@ -1,4 +1,5 @@
 use super::schema::status;
+use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
 
 #[derive(Queryable)]
@@ -24,6 +25,11 @@ impl Status {
         StatusCode::from_u16(self.status_code as u16)
             .map(|s| s.is_success())
             .unwrap_or(false)
+    }
+
+    pub(crate) fn formatted_creation_time(&self) -> String {
+        Utc.from_utc_datetime(&self.created)
+            .to_rfc3339_opts(SecondsFormat::Secs, true)
     }
 }
 

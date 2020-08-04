@@ -37,13 +37,19 @@
     </div>
     <script>
     {
-        let perf_data = [];
-        let perf_labels = [];
+        let perf_data = [
+            {% for status in proj_status.today.get_chart_status() %}{{status.time}},{% endfor %}
+        ];
+        perf_data.reverse();
 
-        {% for status in proj_status.today.get_chart_status() %}
-            perf_data.push({{ status.time }});
-            perf_labels.push({{status.id}});
-        {% endfor %}
+        let perf_labels = [
+            {% for status in proj_status.today.get_chart_status() %}"{{ status.formatted_creation_time() }}",{% endfor %}
+        ];
+        perf_labels.reverse();
+        perf_labels = perf_labels.map((t) => {
+            let x = new Date(Date.parse(t)).toLocaleString().split(", ")[1].split(":");
+            return x[0] + ':' + x[1] + ' ' + x[2].split(" ")[1];
+        });
 
         let smallest_data = Math.max(0, Math.min(...perf_data) - Math.max(...perf_data) * 0.05);
 
@@ -54,7 +60,6 @@
                   labels: perf_labels,
                   datasets: [{
                     cubicInterpolationMode: 'monotonic',
-                    label: "Request time",
                     data: perf_data,
                     borderColor: 'orange',
                     backgroundColor: 'transparent',
@@ -63,12 +68,26 @@
                   }]
           },
             options: {
+                    legend: {
+                        display: false,
+                    },
                 scales: {
                     yAxes: [{
+                        scaleLabel: {
+                          display: true,
+                          labelString: "Ms"
+                        },
                         display: true,
                         ticks: {
                             suggestedMin: smallest_data,    // minimum will be 0, unless there is a lower value.
                         }
+                    }],
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Time"
+                        },
+                        display: true,
                     }]
                 }
             }

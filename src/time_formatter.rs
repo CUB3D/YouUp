@@ -28,7 +28,13 @@ pub mod test {
     #[test]
     fn basic_format() {
         assert_eq!(format_duration(&Duration::minutes(120)), "2 hours");
-        assert_eq!(format_duration(&Duration::minutes(470)), "7 hours 50 minutes");
-        assert_eq!(format_duration(&Duration::minutes(109)), "1 hour 49 minutes");
+        assert_eq!(
+            format_duration(&Duration::minutes(470)),
+            "7 hours 50 minutes"
+        );
+        assert_eq!(
+            format_duration(&Duration::minutes(109)),
+            "1 hour 49 minutes"
+        );
     }
 }
