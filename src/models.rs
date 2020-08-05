@@ -2,7 +2,7 @@ use super::schema::status;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
 
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct Project {
     pub id: i32,
     pub url: String,
@@ -11,7 +11,7 @@ pub struct Project {
     pub created: chrono::NaiveDateTime,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct Status {
     pub id: i32,
     pub project: i32,

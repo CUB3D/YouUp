@@ -3,6 +3,6 @@ use askama::Template;
 
 #[derive(Template)]
 #[template(path = "status_tooltip.html")]
-pub struct StatusTooltipTemplate<'a> {
-    pub day: StatusDay<'a>,
+pub struct StatusTooltipTemplate {
+    pub day: StatusDay,
 }
