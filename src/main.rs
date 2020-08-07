@@ -1,4 +1,4 @@
-use crate::models::{Project, Status};
+use crate::models::{Project, Status, Incidents};
 use actix_files::Files;
 use actix_rt::spawn;
 
@@ -16,13 +16,14 @@ use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
 use crate::update_job::run_update_job;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
-use chrono::{NaiveDateTime, Timelike, Utc};
+use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::expression::sql_literal::sql;
 use rand::Rng;
 use std::convert::TryInto;
 use std::env;
 use std::ops::Sub;
 use template_admin_login::get_admin_login;
+use tokio::stream::StreamExt;
 
 #[macro_use]
 extern crate diesel;
@@ -39,6 +40,11 @@ pub mod template_index;
 pub mod template_tooltip;
 pub mod time_formatter;
 pub mod update_job;
+
+pub struct IncidentDay {
+    pub date: String,
+    pub incidents: Vec<Incidents>,
+}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Downtime {
@@ -334,9 +340,31 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
         })
     }
 
+    use self::schema::incidents::dsl::*;
+    use self::schema::incidents;
+
+    let mut incident_days = Vec::with_capacity(10);
+    let all_incidents: Vec<_> = incidents
+        .filter(sql("created > DATE_SUB(NOW(), INTERVAL 10 day)"))
+        .load::<Incidents>(&pool.get().unwrap())
+        .unwrap();
+
+    for n in 0..10 {
+        let date = Utc::now().sub(Duration::days(n));
+
+
+        let incident_on_day = all_incidents.iter().filter(|i| i.created.date() == date.naive_utc().date()).cloned().collect::<Vec<_>>();
+
+        incident_days.push(IncidentDay {
+            date: date.format("%Y-%m-%d").to_string(),
+            incidents: incident_on_day,
+        })
+    }
+
     let template = IndexTemplate {
         projects: p,
         history_size,
+        incident_days,
     }
     .render()
     .expect("Unable to render template");

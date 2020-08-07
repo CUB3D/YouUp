@@ -95,5 +95,28 @@
     }
         </script>
     {% endfor %}
+
+    <div class="timeline">
+        {% for day in incident_days %}
+        <div class="timeline-item" id="timeline-example-1">
+            <div class="timeline-left">
+                <a class="timeline-icon icon-lg" href="#timeline-example-1">
+                    <i class="icon icon-check"></i>
+                </a>
+            </div>
+            <div class="timeline-content">
+                {{ day.date }}
+
+                {% if day.incidents.is_empty() %}
+                    <p>No incidents reported</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex flex-row">
+        <p>Powered by <a href="https://github.com/CUB3D/YouUp">YouUp 🙏</a></p>
+    </div>
 </div>
 {% endblock %}

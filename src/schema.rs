@@ -16,3 +16,12 @@ table! {
         created -> Datetime,
     }
 }
+table! {
+    incidents (id) {
+        id -> Integer,
+        created -> Datetime,
+        status -> Varchar,
+        message -> Varchar,
+        project -> Integer,
+    }
+}

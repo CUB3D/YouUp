@@ -2,8 +2,16 @@
 
 {% block content %}
 <div class="container-md">
-    <div class="d-flex flex-row">
-        <h2 class="mr-auto">Current Status</h2>
+<form action="/admin" method="POST">
+    <div class="form-group">
+      <label for="inputUsername">Username</label>
+      <input type="text" class="form-control" id="inputUsername" placeholder="Username">
     </div>
+    <div class="form-group">
+      <label for="inputPassword">Password</label>
+      <input type="password" class="form-control" id="inputPassword" placeholder="Password">
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
 </div>
 {% endblock %}

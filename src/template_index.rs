@@ -1,4 +1,4 @@
-use crate::ProjectStatus;
+use crate::{IncidentDay, ProjectStatus};
 use askama::Template;
 
 #[derive(Template)]
@@ -6,4 +6,5 @@ use askama::Template;
 pub struct IndexTemplate {
     pub projects: Vec<ProjectStatus>,
     pub history_size: usize,
+    pub incident_days: Vec<IncidentDay>,
 }

@@ -1,3 +1,4 @@
+use super::schema::incidents;
 use super::schema::status;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
@@ -39,4 +40,21 @@ pub struct NewStatus {
     pub project: i32,
     pub time: i32,
     pub status_code: i32,
+}
+
+#[derive(Queryable, Clone)]
+pub struct Incidents {
+    pub id: i32,
+    pub created: chrono::NaiveDateTime,
+    pub status: String,
+    pub message: String,
+    pub project: i32,
+}
+
+#[derive(Insertable)]
+#[table_name = "incidents"]
+pub struct NewIncident {
+    pub status: String,
+    pub message: String,
+    pub project: i32,
 }

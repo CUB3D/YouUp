@@ -16,6 +16,110 @@
     $('[data-toggle="tooltip"]').tooltip({html: true})
   }
   </script>
+  <style>
+      .timeline .timeline-item {
+          display: -ms-flexbox;
+          display: flex;
+          margin-bottom: 1.2rem;
+          position: relative;
+      }
+
+      .timeline .timeline-item::before {
+          background: #dadee4;
+          content: "";
+          height: 100%;
+          left: 11px;
+          position: absolute;
+          top: 1.2rem;
+          width: 2px;
+      }
+
+      .timeline .timeline-item .timeline-left {
+          -ms-flex: 0 0 auto;
+          flex: 0 0 auto;
+      }
+
+      .timeline .timeline-item .timeline-content {
+          -ms-flex: 1 1 auto;
+          flex: 1 1 auto;
+          padding: 2px 0 2px .8rem;
+      }
+
+      .timeline .timeline-item .timeline-icon {
+          align-items: center;
+          border-radius: 50%;
+          color: #fff;
+          display: -ms-flexbox;
+          display: flex;
+          -ms-flex-align: center;
+          -ms-flex-pack: center;
+          height: 1.2rem;
+          justify-content: center;
+          text-align: center;
+          width: 1.2rem;
+      }
+
+      .timeline .timeline-item .timeline-icon::before {
+          border: .1rem solid #5755d9;
+          border-radius: 50%;
+          content: "";
+          display: block;
+          height: .4rem;
+          left: .4rem;
+          position: absolute;
+          top: .4rem;
+          width: .4rem;
+      }
+
+      .timeline .timeline-item .timeline-icon.icon-lg {
+          background: #5755d9;
+          line-height: 1.2rem;
+      }
+
+      .timeline .timeline-item .timeline-icon.icon-lg::before {
+          content: none;
+      }
+
+      .timeline .timeline-item .timeline-icon.icon-lg {
+          background: #5755d9;
+          line-height: 1.2rem;
+      }
+
+      .timeline .timeline-item .timeline-icon.icon-lg::before {
+          content: none;
+      }
+
+      .icon {
+          box-sizing: border-box;
+          display: inline-block;
+          font-size: inherit;
+          font-style: normal;
+          height: 1em;
+          position: relative;
+          text-indent: -9999px;
+          vertical-align: middle;
+          width: 1em;
+      }
+
+      .icon::before,
+      .icon::after {
+          content: "";
+          display: block;
+          left: 50%;
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+      }
+
+      .icon-check::before {
+          border: .1rem solid currentColor;
+          border-right: 0;
+          border-top: 0;
+          height: .5em;
+          transform: translate(-50%, -75%) rotate(-45deg);
+          width: .9em;
+      }
+  </style>
 </head>
 <body>{% block content %}{% endblock %}</body>
 </html>

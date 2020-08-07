@@ -2,7 +2,7 @@
 ### A simple, self-contained, self hosted status page with history
 ![Licence](https://img.shields.io/github/license/CUB3D/YouUp)
 
-### Screnshots
+### Screenshots
 ![Screenshot](./doc/demo.png)
 
 ### Try it out
