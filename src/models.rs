@@ -1,5 +1,7 @@
 use super::schema::incidents;
 use super::schema::status;
+use super::schema::incident_status_type;
+use super::schema::incident_status_update;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
 
@@ -42,19 +44,44 @@ pub struct NewStatus {
     pub status_code: i32,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Identifiable, Clone)]
+#[table_name="incidents"]
 pub struct Incidents {
     pub id: i32,
     pub created: chrono::NaiveDateTime,
-    pub status: String,
-    pub message: String,
     pub project: i32,
+}
+
+impl Incidents {
+    pub(crate) fn formatted_creation_time(&self) -> String {
+        Utc.from_utc_datetime(&self.created)
+            .to_rfc3339_opts(SecondsFormat::Secs, true)
+    }
 }
 
 #[derive(Insertable)]
 #[table_name = "incidents"]
 pub struct NewIncident {
-    pub status: String,
-    pub message: String,
     pub project: i32,
+}
+
+
+#[derive(Identifiable, Queryable, Clone)]
+#[table_name="incident_status_type"]
+pub struct IncidentStatusType {
+    pub id: i32,
+    pub created: chrono::NaiveDateTime,
+    pub colour: String,
+    pub title: String,
+}
+
+#[derive(Identifiable, Queryable, Clone, Associations)]
+#[belongs_to(Incidents, foreign_key="incident")]
+#[table_name="incident_status_update"]
+pub struct IncidentStatusUpdate {
+    pub id: i32,
+    pub created: chrono::NaiveDateTime,
+    pub status_type: i32,
+    pub message: String,
+    pub incident: i32,
 }

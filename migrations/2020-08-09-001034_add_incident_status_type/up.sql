@@ -1,0 +1,6 @@
+CREATE TABLE incident_status_type (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    created DATETIME DEFAULT CURRENT_TIMESTAMP() NOT NULL,
+    colour VARCHAR (16) NOT NULL,
+    title Varchar(64) NOT NULL
+)

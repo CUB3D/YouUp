@@ -1,4 +1,4 @@
-use crate::models::{Project, Status, Incidents};
+use crate::models::{Project, Status, Incidents, IncidentStatusUpdate, IncidentStatusType};
 use actix_files::Files;
 use actix_rt::spawn;
 
@@ -9,6 +9,7 @@ use actix_web::{App, HttpResponse, Responder};
 use askama::Template;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use dotenv::dotenv;
+use crate::diesel::GroupedBy;
 
 use crate::db::Database;
 use crate::project_status::ProjectStatusTypes;
@@ -24,6 +25,8 @@ use std::env;
 use std::ops::Sub;
 use template_admin_login::get_admin_login;
 use tokio::stream::StreamExt;
+use crate::diesel::BelongingToDsl;
+
 
 #[macro_use]
 extern crate diesel;
@@ -43,7 +46,7 @@ pub mod update_job;
 
 pub struct IncidentDay {
     pub date: String,
-    pub incidents: Vec<Incidents>,
+    pub incidents: Vec<(Incidents, Vec<(IncidentStatusUpdate, IncidentStatusType)>)>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -342,18 +345,29 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
 
     use self::schema::incidents::dsl::*;
     use self::schema::incidents;
+    use self::schema::incident_status_type;
+    use self::schema::incident_status_update;
 
     let mut incident_days = Vec::with_capacity(10);
+
     let all_incidents: Vec<_> = incidents
         .filter(sql("created > DATE_SUB(NOW(), INTERVAL 10 day)"))
         .load::<Incidents>(&pool.get().unwrap())
         .unwrap();
 
+    let incident_days_status = IncidentStatusUpdate::belonging_to(&all_incidents)
+        .inner_join(incident_status_type::table)
+        .filter(incident_status_type::dsl::id.eq(incident_status_update::dsl::id))
+        .load(&pool.get().unwrap())
+        .unwrap()
+        .grouped_by(&all_incidents);
+    let incidents_and_status = all_incidents.into_iter().zip(incident_days_status).collect::<Vec<_>>();
+
     for n in 0..10 {
         let date = Utc::now().sub(Duration::days(n));
 
 
-        let incident_on_day = all_incidents.iter().filter(|i| i.created.date() == date.naive_utc().date()).cloned().collect::<Vec<_>>();
+        let incident_on_day = incidents_and_status.iter().filter(|i| i.0.created.date() == date.naive_utc().date()).cloned().collect::<Vec<_>>();
 
         incident_days.push(IncidentDay {
             date: date.format("%Y-%m-%d").to_string(),
@@ -373,7 +387,6 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
 }
 
 //TODO: admin ui
-//TODO: incident tracking
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

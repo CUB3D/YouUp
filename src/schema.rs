@@ -20,8 +20,29 @@ table! {
     incidents (id) {
         id -> Integer,
         created -> Datetime,
-        status -> Varchar,
-        message -> Varchar,
         project -> Integer,
     }
 }
+
+table! {
+    incident_status_type (id) {
+        id -> Integer,
+        created -> Datetime,
+        colour -> Varchar,
+        title -> Varchar,
+    }
+}
+
+table! {
+    incident_status_update (id) {
+        id -> Integer,
+        created -> Datetime,
+        status_type -> Integer,
+        message -> Varchar,
+        incident -> Integer,
+    }
+}
+
+joinable!(incident_status_update -> incident_status_type(status_type));
+
+allow_tables_to_appear_in_same_query!(incident_status_update, incident_status_type,);
