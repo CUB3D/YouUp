@@ -1,7 +1,8 @@
-use crate::models::{Project, Status, Incidents, IncidentStatusUpdate, IncidentStatusType};
+use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, Project, Status};
 use actix_files::Files;
 use actix_rt::spawn;
 
+use crate::diesel::GroupedBy;
 use actix_web::middleware::{Compress, Logger, NormalizePath};
 use actix_web::web::{resource, Data};
 use actix_web::HttpServer;
@@ -9,10 +10,12 @@ use actix_web::{App, HttpResponse, Responder};
 use askama::Template;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use dotenv::dotenv;
-use crate::diesel::GroupedBy;
 
 use crate::db::Database;
+use crate::diesel::BelongingToDsl;
 use crate::project_status::ProjectStatusTypes;
+use crate::template_admin_dashboard::get_admin_dashboard;
+use crate::template_admin_login::post_admin_login;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
 use crate::update_job::run_update_job;
@@ -25,19 +28,20 @@ use std::env;
 use std::ops::Sub;
 use template_admin_login::get_admin_login;
 use tokio::stream::StreamExt;
-use crate::diesel::BelongingToDsl;
-
 
 #[macro_use]
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
+#[macro_use]
+extern crate lazy_static;
 
 pub mod db;
 pub mod models;
 pub mod project_status;
 pub mod schema;
 pub mod settings;
+pub mod template_admin_dashboard;
 pub mod template_admin_login;
 pub mod template_index;
 pub mod template_tooltip;
@@ -343,10 +347,10 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
         })
     }
 
-    use self::schema::incidents::dsl::*;
-    use self::schema::incidents;
     use self::schema::incident_status_type;
     use self::schema::incident_status_update;
+    use self::schema::incidents;
+    use self::schema::incidents::dsl::*;
 
     let mut incident_days = Vec::with_capacity(10);
 
@@ -356,18 +360,25 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
         .unwrap();
 
     let incident_days_status = IncidentStatusUpdate::belonging_to(&all_incidents)
+        .order(incident_status_update::dsl::created.desc())
         .inner_join(incident_status_type::table)
         .filter(incident_status_type::dsl::id.eq(incident_status_update::dsl::id))
         .load(&pool.get().unwrap())
         .unwrap()
         .grouped_by(&all_incidents);
-    let incidents_and_status = all_incidents.into_iter().zip(incident_days_status).collect::<Vec<_>>();
+    let incidents_and_status = all_incidents
+        .into_iter()
+        .zip(incident_days_status)
+        .collect::<Vec<_>>();
 
     for n in 0..10 {
         let date = Utc::now().sub(Duration::days(n));
 
-
-        let incident_on_day = incidents_and_status.iter().filter(|i| i.0.created.date() == date.naive_utc().date()).cloned().collect::<Vec<_>>();
+        let incident_on_day = incidents_and_status
+            .iter()
+            .filter(|i| i.0.created.date() == date.naive_utc().date())
+            .cloned()
+            .collect::<Vec<_>>();
 
         incident_days.push(IncidentDay {
             date: date.format("%Y-%m-%d").to_string(),
@@ -408,6 +419,8 @@ async fn main() -> std::io::Result<()> {
             .service(Files::new("/static", "./static"))
             .service(resource("/").to(root))
             .service(get_admin_login)
+            .service(post_admin_login)
+            .service(get_admin_dashboard)
             .wrap(Logger::default())
             .wrap(Compress::default())
             .wrap(NormalizePath::default())

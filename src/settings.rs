@@ -1,4 +1,7 @@
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 use std::env;
+use std::ops::Deref;
 
 pub fn get_history_size() -> usize {
     env::var("HISTORY_SIZE")
@@ -22,4 +25,19 @@ pub fn smtp_username() -> String {
 
 pub fn smtp_password() -> String {
     env::var("SMTP_PASSWORD").unwrap_or_else(|_| "".to_string())
+}
+
+pub fn admin_username() -> String {
+    env::var("ADMIN_USERNAME").unwrap_or_else(|_| "admin".to_string())
+}
+
+lazy_static! {
+    static ref rand_string: String = thread_rng().sample_iter(&Alphanumeric).take(15).collect();
+}
+
+pub fn admin_password() -> String {
+    env::var("ADMIN_PASSWORD").unwrap_or_else(|_| {
+        println!("No admin password supplied, using '{}', set the ADMIN_PASSWORD environment variable to change to a persistent value.", rand_string.deref());
+        rand_string.clone()
+    })
 }

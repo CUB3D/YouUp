@@ -1,7 +1,7 @@
-use super::schema::incidents;
-use super::schema::status;
 use super::schema::incident_status_type;
 use super::schema::incident_status_update;
+use super::schema::incidents;
+use super::schema::status;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
 
@@ -45,7 +45,7 @@ pub struct NewStatus {
 }
 
 #[derive(Queryable, Identifiable, Clone)]
-#[table_name="incidents"]
+#[table_name = "incidents"]
 pub struct Incidents {
     pub id: i32,
     pub created: chrono::NaiveDateTime,
@@ -65,9 +65,8 @@ pub struct NewIncident {
     pub project: i32,
 }
 
-
 #[derive(Identifiable, Queryable, Clone)]
-#[table_name="incident_status_type"]
+#[table_name = "incident_status_type"]
 pub struct IncidentStatusType {
     pub id: i32,
     pub created: chrono::NaiveDateTime,
@@ -76,8 +75,8 @@ pub struct IncidentStatusType {
 }
 
 #[derive(Identifiable, Queryable, Clone, Associations)]
-#[belongs_to(Incidents, foreign_key="incident")]
-#[table_name="incident_status_update"]
+#[belongs_to(Incidents, foreign_key = "incident")]
+#[table_name = "incident_status_update"]
 pub struct IncidentStatusUpdate {
     pub id: i32,
     pub created: chrono::NaiveDateTime,

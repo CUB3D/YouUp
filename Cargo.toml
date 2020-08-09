@@ -33,3 +33,5 @@ http = "0.2.1"
 tokio = { version = "0.2.21", features = ["full"] }
 
 lettre = { version = "0.10.0-alpha.1", features = ["smtp-transport"] }
+
+lazy_static = "1.4.0"

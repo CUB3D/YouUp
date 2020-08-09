@@ -2,10 +2,16 @@
 
 {% block content %}
 <div class="container-md">
+
+    {% if self.is_operational_today() %}
+        <div class="alert alert-success mt-1 mb-1" role="alert">All Systems Operational</div>
+    {% endif %}
+
     <div class="d-flex flex-row">
         <h2 class="mr-auto">Current Status</h2>
         <p class="align-self-end mb-0 font-weight-light">Data from the past {{ history_size }} days.</p>
     </div>
+
     {% for proj_status in projects %}
     <div class="card mt-2 mb-2">
         <div class="card-header">
@@ -113,7 +119,8 @@
                     {% for incident in day.incidents %}
                         <h3>Incident on {{incident.0.formatted_creation_time()}}</h3>
                         {% for status_update in incident.1 %}
-                            <p>{{status_update.1.title}} - {{status_update.0.message}}</p>
+                            <p><span style="color: {{status_update.1.colour}}">{{status_update.1.title}}</span> - {{status_update.0.message}}</p>
+                            <p>{{status_update.0.created}}</p>
                         {% endfor %}
                      {% endfor %}
                 {% endif %}
