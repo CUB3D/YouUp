@@ -1,0 +1,7 @@
+-- Your SQL goes here
+CREATE TABLE settings (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    created DATETIME DEFAULT CURRENT_TIMESTAMP() NOT NULL,
+    name Varchar(256) NOT NULL,
+    value TEXT NOT NULL
+);

@@ -23,8 +23,7 @@
                      title="{{ proj_status.project.description.as_ref().unwrap() }}"/>
                 {% endif %}
                 <div class="mr-auto"></div>
-                <h5 class="card-title" style="color: {{ proj_status.today.get_overall_status().get_colour() }}">{{
-                    proj_status.today.get_overall_status() }}</h5>
+                <h5 class="card-title" style="color: {{ proj_status.today.get_overall_status().get_colour() }}">{{ proj_status.today.get_overall_status() }}</h5>
             </div>
         </div>
         <div class="card-body">

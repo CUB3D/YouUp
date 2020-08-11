@@ -8,6 +8,8 @@ pub struct IndexTemplate {
     pub projects: Vec<ProjectStatus>,
     pub history_size: usize,
     pub incident_days: Vec<IncidentDay>,
+    pub custom_script: String,
+    pub custom_style: String,
 }
 
 impl IndexTemplate {

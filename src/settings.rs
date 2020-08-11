@@ -1,3 +1,7 @@
+use crate::db::Database;
+use crate::diesel::RunQueryDsl;
+use crate::models::Setting;
+use diesel::{ExpressionMethods, QueryDsl};
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use std::env;
@@ -32,12 +36,47 @@ pub fn admin_username() -> String {
 }
 
 lazy_static! {
-    static ref rand_string: String = thread_rng().sample_iter(&Alphanumeric).take(15).collect();
+    static ref ADMIN_PASSWORD: String = thread_rng().sample_iter(&Alphanumeric).take(15).collect();
+}
+
+lazy_static! {
+    static ref PRIVATE_KEY: [u8; 32] = thread_rng().gen::<[u8; 32]>();
 }
 
 pub fn admin_password() -> String {
     env::var("ADMIN_PASSWORD").unwrap_or_else(|_| {
-        println!("No admin password supplied, using '{}', set the ADMIN_PASSWORD environment variable to change to a persistent value.", rand_string.deref());
-        rand_string.clone()
+        println!("No admin password supplied, using '{}', set the ADMIN_PASSWORD environment variable to change to a persistent value.", ADMIN_PASSWORD.deref());
+        ADMIN_PASSWORD.clone()
     })
+}
+
+pub fn private_key() -> Vec<u8> {
+    env::var("PRIVATE_KEY")
+        .map(|s| s.into_bytes())
+        .unwrap_or(PRIVATE_KEY.to_vec())
+}
+
+pub struct PersistedSettings {
+    db: Database,
+}
+
+pub const CUSTOM_SCRIPT: &str = "CUSTOM_SCRIPT";
+pub const CUSTOM_STYLE: &str = "CUSTOM_STYLE";
+
+impl PersistedSettings {
+    pub fn new(db: Database) -> Self {
+        Self { db }
+    }
+
+    pub fn get_setting(&self, name: &str) -> String {
+        use crate::schema::settings;
+        let setting: Vec<Setting> = settings::table
+            .filter(settings::dsl::name.eq(name))
+            .load::<Setting>(&self.db.get().unwrap())
+            .unwrap();
+        setting
+            .first()
+            .map(|f| f.value.clone())
+            .unwrap_or_else(|| "".to_string())
+    }
 }

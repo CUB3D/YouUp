@@ -14,7 +14,9 @@ use dotenv::dotenv;
 use crate::db::Database;
 use crate::diesel::BelongingToDsl;
 use crate::project_status::ProjectStatusTypes;
+use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
 use crate::template_admin_dashboard::get_admin_dashboard;
+use crate::template_admin_dashboard::post_admin_dashboard;
 use crate::template_admin_login::post_admin_login;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
@@ -22,12 +24,10 @@ use crate::update_job::run_update_job;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::expression::sql_literal::sql;
-use rand::Rng;
 use std::convert::TryInto;
 use std::env;
 use std::ops::Sub;
 use template_admin_login::get_admin_login;
-use tokio::stream::StreamExt;
 
 #[macro_use]
 extern crate diesel;
@@ -292,7 +292,7 @@ async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime> {
     downtime
 }
 
-pub async fn root(pool: Data<Database>) -> impl Responder {
+pub async fn root(pool: Data<Database>, settings: Data<PersistedSettings>) -> impl Responder {
     use self::schema::projects::dsl::*;
     use self::schema::status as stat;
 
@@ -349,7 +349,6 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
 
     use self::schema::incident_status_type;
     use self::schema::incident_status_update;
-    use self::schema::incidents;
     use self::schema::incidents::dsl::*;
 
     let mut incident_days = Vec::with_capacity(10);
@@ -390,6 +389,8 @@ pub async fn root(pool: Data<Database>) -> impl Responder {
         projects: p,
         history_size,
         incident_days,
+        custom_script: settings.get_setting(CUSTOM_SCRIPT),
+        custom_style: settings.get_setting(CUSTOM_STYLE),
     }
     .render()
     .expect("Unable to render template");
@@ -411,21 +412,22 @@ async fn main() -> std::io::Result<()> {
     }
 
     //TODO: store in config
-    let private_key = rand::thread_rng().gen::<[u8; 32]>();
 
     HttpServer::new(move || {
         App::new()
             .data(db.clone())
+            .data(PersistedSettings::new(db.clone()))
             .service(Files::new("/static", "./static"))
             .service(resource("/").to(root))
             .service(get_admin_login)
             .service(post_admin_login)
             .service(get_admin_dashboard)
+            .service(post_admin_dashboard)
             .wrap(Logger::default())
             .wrap(Compress::default())
             .wrap(NormalizePath::default())
             .wrap(IdentityService::new(
-                CookieIdentityPolicy::new(&private_key)
+                CookieIdentityPolicy::new(&settings::private_key())
                     .name("you-up-auth")
                     .secure(false),
             ))

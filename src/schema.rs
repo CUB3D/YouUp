@@ -5,6 +5,7 @@ table! {
         name -> Varchar,
         description -> Nullable<Text>,
         created -> Datetime,
+        enabled -> Bool,
     }
 }
 table! {
@@ -40,6 +41,15 @@ table! {
         status_type -> Integer,
         message -> Varchar,
         incident -> Integer,
+    }
+}
+
+table! {
+    settings (id) {
+        id -> Integer,
+        created -> Datetime,
+        name -> Varchar,
+        value -> Text,
     }
 }
 

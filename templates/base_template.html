@@ -11,6 +11,8 @@
   <script src="/static/bootstrap.min.js"></script>
   <script src="/static/Chart.min.js"></script>
   <link rel="stylesheet" href="/static/bootstrap.min.css">
+  <script>{{ custom_script|safe }}</script>
+  <style>{{ custom_style|safe }}</style>
   <script>
   window.onload = () => {
     $('[data-toggle="tooltip"]').tooltip({html: true})

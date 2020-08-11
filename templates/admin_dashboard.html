@@ -1,6 +1,6 @@
-{% extends "base_template.html" %}
+{% extends "base_admin_template.html" %}
 
-{% block content %}
+{% block content_main %}
 <div class="container-md">
 
 
@@ -8,12 +8,27 @@
         <h2 class="mr-auto">Projects</h2>
     </div>
 
-    {% for proj_status in projects %}
-    <div class="card mt-2 mb-2">
-        <div class="card-header">
-
+    <form action="/admin/dashboard" method="post">
+        {% for project in projects %}
+            <div class="card mt-2 mb-2">
+                <div class="card-header">
+                    <input type="text" class="card-title" id="{{project.id}}_name" value="{{ project.name }}"/>
+                </div>
+                <div class="card-body">
+                    <div class="custom-control custom-switch">
+                        {% if project.enabled %}
+                            <input type="checkbox" class="custom-control-input" id="{{project.id}}_enabled" name="enabled" checked>
+                        {% else %}
+                            <input type="checkbox" class="custom-control-input" id="{{project.id}}_enabled" name="enabled">
+                        {% endif %}
+                        <label class="custom-control-label" for="{{project.id}}_enabled">Show on homepage</label>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" value="Save">
         </div>
-    </div>
-    {% endfor %}
+    </form>
 </div>
 {% endblock %}

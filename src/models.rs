@@ -1,6 +1,7 @@
 use super::schema::incident_status_type;
 use super::schema::incident_status_update;
 use super::schema::incidents;
+use super::schema::settings;
 use super::schema::status;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
@@ -12,6 +13,7 @@ pub struct Project {
     pub name: String,
     pub description: Option<String>,
     pub created: chrono::NaiveDateTime,
+    pub enabled: bool,
 }
 
 #[derive(Queryable, Clone)]
@@ -83,4 +85,12 @@ pub struct IncidentStatusUpdate {
     pub status_type: i32,
     pub message: String,
     pub incident: i32,
+}
+
+#[derive(Identifiable, Queryable, Clone)]
+pub struct Setting {
+    pub id: i32,
+    pub created: chrono::NaiveDateTime,
+    pub name: String,
+    pub value: String,
 }
