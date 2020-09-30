@@ -13,8 +13,10 @@ use dotenv::dotenv;
 
 use crate::db::Database;
 use crate::diesel::BelongingToDsl;
+use crate::form_email_subscribe::{get_email_confirm, post_email_subscribe};
+use crate::mailer::Mailer;
 use crate::project_status::ProjectStatusTypes;
-use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
+use crate::settings::{PersistedSettings, CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE};
 use crate::template_admin_dashboard::get_admin_dashboard;
 use crate::template_admin_dashboard::post_admin_dashboard;
 use crate::template_admin_login::post_admin_login;
@@ -27,7 +29,9 @@ use diesel::expression::sql_literal::sql;
 use std::convert::TryInto;
 use std::env;
 use std::ops::Sub;
+use std::sync::Arc;
 use template_admin_login::get_admin_login;
+use env_logger::Env;
 
 #[macro_use]
 extern crate diesel;
@@ -37,6 +41,8 @@ extern crate diesel_migrations;
 extern crate lazy_static;
 
 pub mod db;
+pub mod form_email_subscribe;
+pub mod mailer;
 pub mod models;
 pub mod project_status;
 pub mod schema;
@@ -118,14 +124,14 @@ pub struct ProjectStatus {
 
 #[cfg(test)]
 mod test {
+    use crate::compute_downtime_periods;
     use crate::models::Status;
-    use crate::{compute_downtime_periods, Downtime};
     use chrono::{Timelike, Utc};
     use std::ops::Sub;
 
     #[actix_rt::test]
     async fn compute_simple_downtime() {
-        let x = compute_downtime_periods(&vec![Status {
+        let x = compute_downtime_periods(&[Status {
             created: Utc::now().naive_utc(),
             status_code: 200,
             id: 0,
@@ -139,7 +145,7 @@ mod test {
 
     #[actix_rt::test]
     async fn compute_downtime() {
-        let x = compute_downtime_periods(&vec![
+        let x = compute_downtime_periods(&[
             Status {
                 created: Utc::now().naive_utc(),
                 status_code: 200,
@@ -170,7 +176,7 @@ mod test {
 
     #[actix_rt::test]
     async fn compute_downtime_end_of_day() {
-        let x = compute_downtime_periods(&vec![
+        let x = compute_downtime_periods(&[
             Status {
                 created: Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
                 status_code: 200,
@@ -194,7 +200,7 @@ mod test {
 
     #[actix_rt::test]
     async fn compute_downtime_never_up() {
-        let x = compute_downtime_periods(&vec![
+        let x = compute_downtime_periods(&[
             Status {
                 created: Utc::now().naive_utc().with_hour(1).unwrap(),
                 status_code: 404,
@@ -391,6 +397,7 @@ pub async fn root(pool: Data<Database>, settings: Data<PersistedSettings>) -> im
         incident_days,
         custom_script: settings.get_setting(CUSTOM_SCRIPT),
         custom_style: settings.get_setting(CUSTOM_STYLE),
+        custom_html: settings.get_setting(CUSTOM_HTML),
     }
     .render()
     .expect("Unable to render template");
@@ -398,18 +405,30 @@ pub async fn root(pool: Data<Database>, settings: Data<PersistedSettings>) -> im
     HttpResponse::Ok().body(template)
 }
 
+//TODO: REST API
+//TODO: SMS, webhooks, twitter, rss, atom
 //TODO: admin ui
+//TODO: multiple accounts
+//TODO: SSO
+//TODO: embed support
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    env_logger::init();
+    env_logger::from_env(Env::default().default_filter_or("info")).init();
 
     let db = db::get_db_connection();
+    let mailer = Arc::new(Mailer::default());
 
-    if env::var("UPDATE").unwrap_or("1".to_string()) == "1" {
-        spawn(run_update_job(db.clone()));
+    if env::var("UPDATE").unwrap_or_else(|_| "1".to_string()) == "1" {
+        spawn(run_update_job(mailer.clone(), db.clone()));
     }
+
+    let port = env::var("HOST_PORT").unwrap_or_else(|_| "8102".to_string());
+    let ip = env::var("HOST_IP").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let host = format!("{}:{}", ip, port);
+
+    tracing::info!("Running on http://{}", host);
 
     //TODO: store in config
 
@@ -417,12 +436,15 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .data(db.clone())
             .data(PersistedSettings::new(db.clone()))
+            .data(mailer.clone())
             .service(Files::new("/static", "./static"))
             .service(resource("/").to(root))
             .service(get_admin_login)
             .service(post_admin_login)
             .service(get_admin_dashboard)
             .service(post_admin_dashboard)
+            .service(post_email_subscribe)
+            .service(get_email_confirm)
             .wrap(Logger::default())
             .wrap(Compress::default())
             .wrap(NormalizePath::default())
@@ -432,7 +454,7 @@ async fn main() -> std::io::Result<()> {
                     .secure(false),
             ))
     })
-    .bind("0.0.0.0:8102")?
+    .bind(host)?
     .run()
     .await
 }

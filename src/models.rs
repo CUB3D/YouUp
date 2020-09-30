@@ -1,3 +1,4 @@
+use super::schema::email_subscriptions;
 use super::schema::incident_status_type;
 use super::schema::incident_status_update;
 use super::schema::incidents;
@@ -93,4 +94,18 @@ pub struct Setting {
     pub created: chrono::NaiveDateTime,
     pub name: String,
     pub value: String,
+}
+
+#[derive(Identifiable, Queryable, Clone)]
+pub struct EmailSubscription {
+    pub id: i32,
+    pub created: chrono::NaiveDateTime,
+    pub email: String,
+    pub confirmed: bool,
+}
+
+#[derive(Insertable)]
+#[table_name = "email_subscriptions"]
+pub struct NewEmailSubscription {
+    pub email: String,
 }

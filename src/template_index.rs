@@ -10,6 +10,7 @@ pub struct IndexTemplate {
     pub incident_days: Vec<IncidentDay>,
     pub custom_script: String,
     pub custom_style: String,
+    pub custom_html: String,
 }
 
 impl IndexTemplate {

@@ -3,6 +3,18 @@
 {% block content %}
 <div class="container-md">
 
+    <div>{{ custom_html|safe }}</div>
+
+    <form action="/subscribe/email" method="post">
+        <div class="form-group">
+            <label for="inputEmail">Email</label>
+            <input type="email" class="form-control" id="inputEmail" placeholder="example@example.com" name="email">
+        </div>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" id="inputUsername" placeholder="Username" name="username" value="Subscribe">
+        </div>
+    </form>
+
     {% if self.is_operational_today() %}
         <div class="alert alert-success mt-1 mb-1" role="alert">All Systems Operational</div>
     {% endif %}

@@ -53,6 +53,15 @@ table! {
     }
 }
 
+table! {
+    email_subscriptions (id) {
+        id -> Integer,
+        created -> Datetime,
+        email -> Varchar,
+        confirmed -> Bool,
+    }
+}
+
 joinable!(incident_status_update -> incident_status_type(status_type));
 
 allow_tables_to_appear_in_same_query!(incident_status_update, incident_status_type,);

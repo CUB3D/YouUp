@@ -13,7 +13,7 @@ pub trait AdminLogin {
 
 impl AdminLogin for Identity {
     fn is_logged_in(&self) -> bool {
-        return self.identity() == Some("admin".to_string());
+        self.identity() == Some("admin".to_string())
     }
 }
 

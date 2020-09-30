@@ -5,12 +5,11 @@ use http::status::StatusCode;
 use reqwest::Client;
 
 use crate::db::Database;
-use crate::settings;
-use lettre::transport::smtp::authentication::Credentials;
-use lettre::{Message, SmtpTransport, Transport};
+use crate::mailer::Mailer;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-pub async fn run_update_job(db: Database) {
+pub async fn run_update_job(mailer: Arc<Mailer>, db: Database) {
     let c = Client::builder().build().unwrap();
 
     loop {
@@ -52,33 +51,19 @@ pub async fn run_update_job(db: Database) {
             if let Ok(stat) = most_recent_status {
                 if let Some(stat2) = stat.first() {
                     if stat2.is_success() && !status.is_success() {
-                        let email = Message::builder()
-                            // Addresses can be specified by the tuple (email, alias)
-                            .to(crate::settings::get_email_addr()
-                                .parse()
-                                .expect("Unable to parse alert email"))
-                            .from("YouUp <alerts@you-up.net>".parse().unwrap())
-                            .subject(format!("Alert in project '{}'", domain.name))
-                            .body("Service is now down")
-                            .unwrap();
+                        // let email = Message::builder()
+                        //     // Addresses can be specified by the tuple (email, alias)
+                        //     .to(crate::settings::get_email_addr()
+                        //         .parse()
+                        //         .expect("Unable to parse alert email"))
+                        //     .from(.parse().unwrap())
+                        //     .subject()
+                        //     .body("Service is now down")
+                        //     .unwrap();
 
-                        let creds =
-                            Credentials::new(settings::smtp_username(), settings::smtp_password());
+                        // mailer.send_message(email);
 
-                        // Open a remote connection to gmail
-                        let mailer = SmtpTransport::relay("smtp.gmail.com")
-                            .unwrap()
-                            .credentials(creds)
-                            .build();
-
-                        // Send the email
-                        let result = mailer.send(&email);
-
-                        if result.is_ok() {
-                            println!("Email sent");
-                        } else {
-                            println!("Could not send email: {:?}", result);
-                        }
+                        mailer.send_to_subscribers(&db, "YouUp <alerts@you-up.net>", format!("Alert in project '{}'", domain.name), "Service is now down")
                     }
                 }
             }

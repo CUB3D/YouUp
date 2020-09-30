@@ -8,6 +8,9 @@ embed_migrations!();
 pub type Database = Pool<ConnectionManager<MysqlConnection>>;
 
 pub fn get_db_connection() -> Database {
+    let span = tracing::info_span!("Connecting to the database");
+    let _span_guard = span.enter();
+
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let conn = MysqlConnection::establish(&database_url)

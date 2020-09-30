@@ -53,7 +53,7 @@ pub fn admin_password() -> String {
 pub fn private_key() -> Vec<u8> {
     env::var("PRIVATE_KEY")
         .map(|s| s.into_bytes())
-        .unwrap_or(PRIVATE_KEY.to_vec())
+        .unwrap_or_else(|_| PRIVATE_KEY.to_vec())
 }
 
 pub struct PersistedSettings {
@@ -62,6 +62,7 @@ pub struct PersistedSettings {
 
 pub const CUSTOM_SCRIPT: &str = "CUSTOM_SCRIPT";
 pub const CUSTOM_STYLE: &str = "CUSTOM_STYLE";
+pub const CUSTOM_HTML: &str = "CUSTOM_HTML";
 
 impl PersistedSettings {
     pub fn new(db: Database) -> Self {
