@@ -20,18 +20,19 @@ use crate::settings::{PersistedSettings, CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYL
 use crate::template_admin_dashboard::get_admin_dashboard;
 use crate::template_admin_dashboard::post_admin_dashboard;
 use crate::template_admin_login::post_admin_login;
+use crate::template_admin_subscriptions::{get_admin_subscriptions, post_admin_subscriptions};
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
 use crate::update_job::run_update_job;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::expression::sql_literal::sql;
+use env_logger::Env;
 use std::convert::TryInto;
 use std::env;
 use std::ops::Sub;
 use std::sync::Arc;
 use template_admin_login::get_admin_login;
-use env_logger::Env;
 
 #[macro_use]
 extern crate diesel;
@@ -49,6 +50,7 @@ pub mod schema;
 pub mod settings;
 pub mod template_admin_dashboard;
 pub mod template_admin_login;
+pub mod template_admin_subscriptions;
 pub mod template_index;
 pub mod template_tooltip;
 pub mod time_formatter;
@@ -443,6 +445,8 @@ async fn main() -> std::io::Result<()> {
             .service(post_admin_login)
             .service(get_admin_dashboard)
             .service(post_admin_dashboard)
+            .service(get_admin_subscriptions)
+            .service(post_admin_subscriptions)
             .service(post_email_subscribe)
             .service(get_email_confirm)
             .wrap(Logger::default())

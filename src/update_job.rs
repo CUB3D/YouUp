@@ -63,7 +63,12 @@ pub async fn run_update_job(mailer: Arc<Mailer>, db: Database) {
 
                         // mailer.send_message(email);
 
-                        mailer.send_to_subscribers(&db, "YouUp <alerts@you-up.net>", format!("Alert in project '{}'", domain.name), "Service is now down")
+                        mailer.send_to_subscribers(
+                            &db,
+                            "YouUp <alerts@you-up.net>",
+                            format!("Alert in project '{}'", domain.name),
+                            "Service is now down",
+                        )
                     }
                 }
             }

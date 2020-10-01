@@ -38,3 +38,5 @@ lazy_static = "1.4.0"
 
 tracing = { version = "0.1", features = ["log"] }
 
+uuid = "0.8.1"
+

@@ -2667,4 +2667,5 @@ dependencies = [
  "serde",
  "tokio",
  "tracing",
+ "uuid",
 ]

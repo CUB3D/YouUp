@@ -1,10 +1,11 @@
+use crate::db::Database;
+use crate::diesel::RunQueryDsl;
+use crate::models::EmailSubscription;
 use crate::settings;
+use diesel::{ExpressionMethods, QueryDsl};
+use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
-use crate::db::Database;
-use diesel::{QueryDsl, ExpressionMethods};
-use crate::models::EmailSubscription;
-use crate::diesel::RunQueryDsl;
 
 #[derive(Clone)]
 pub struct Mailer {
@@ -37,20 +38,27 @@ impl Mailer {
         }
     }
 
-    pub fn send_to_subscribers(&self, db: &Database, from: &str, title: String, message_body: &str) {
+    pub fn send_to_subscribers(
+        &self,
+        db: &Database,
+        from: &str,
+        title: String,
+        message_body: &str,
+    ) {
         use crate::schema::email_subscriptions;
 
-        let subscribed_users = email_subscriptions::table.filter(email_subscriptions::dsl::confirmed.eq(true))
+        let subscribed_users = email_subscriptions::table
+            .filter(email_subscriptions::dsl::confirmed.eq(true))
             .load::<EmailSubscription>(&db.get().unwrap())
             .unwrap();
 
         for user in &subscribed_users {
             let email = Message::builder()
-                // Addresses can be specified by the tuple (email, alias)
                 .to(user.email.parse().unwrap())
                 .from(from.parse().unwrap())
+                .header(ContentType::html())
                 .subject(&title)
-                .body(message_body.clone())
+                .body(message_body)
                 .unwrap();
 
             self.send_message(email);
