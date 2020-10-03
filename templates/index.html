@@ -128,7 +128,7 @@
                     <p>No incidents reported</p>
                 {% else %}
                     {% for incident in day.incidents %}
-                        <h3>Incident on {{incident.0.formatted_creation_time()}}</h3>
+                <h3><a href="/incident/{{incident.0.id}}">Incident on {{incident.0.formatted_creation_time()}}</a></h3>
                         {% for status_update in incident.1 %}
                             <p><span style="color: {{status_update.1.colour}}">{{status_update.1.title}}</span> - {{status_update.0.message}}</p>
                             <p>{{status_update.0.created}}</p>

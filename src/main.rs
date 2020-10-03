@@ -11,6 +11,8 @@ use askama::Template;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use dotenv::dotenv;
 
+use crate::data::incident_repository::IncidentRepository;
+use crate::data::project_repository::ProjectRepository;
 use crate::db::Database;
 use crate::diesel::BelongingToDsl;
 use crate::form_email_subscribe::{get_email_confirm, post_email_subscribe};
@@ -19,8 +21,11 @@ use crate::project_status::ProjectStatusTypes;
 use crate::settings::{PersistedSettings, CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE};
 use crate::template_admin_dashboard::get_admin_dashboard;
 use crate::template_admin_dashboard::post_admin_dashboard;
+use crate::template_admin_incident::{get_admin_incidents, post_admin_incidents};
+use crate::template_admin_incident_new::{get_admin_incidents_new, post_admin_incidents_new};
 use crate::template_admin_login::post_admin_login;
 use crate::template_admin_subscriptions::{get_admin_subscriptions, post_admin_subscriptions};
+use crate::template_incident_details::get_incident_details;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
 use crate::update_job::run_update_job;
@@ -41,6 +46,7 @@ extern crate diesel_migrations;
 #[macro_use]
 extern crate lazy_static;
 
+pub mod data;
 pub mod db;
 pub mod form_email_subscribe;
 pub mod mailer;
@@ -49,8 +55,11 @@ pub mod project_status;
 pub mod schema;
 pub mod settings;
 pub mod template_admin_dashboard;
+pub mod template_admin_incident;
+mod template_admin_incident_new;
 pub mod template_admin_login;
 pub mod template_admin_subscriptions;
+pub mod template_incident_details;
 pub mod template_index;
 pub mod template_tooltip;
 pub mod time_formatter;
@@ -419,7 +428,6 @@ pub async fn root(pool: Data<Database>, settings: Data<PersistedSettings>) -> im
 
 //TODO: REST API
 //TODO: SMS, webhooks, twitter, rss, atom
-//TODO: admin ui
 //TODO: multiple accounts
 //TODO: SSO
 //TODO: embed support
@@ -447,10 +455,13 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .data(db.clone())
+            .data(Box::new(db.clone()) as Box<dyn ProjectRepository>)
+            .data(Box::new(db.clone()) as Box<dyn IncidentRepository>)
             .data(PersistedSettings::new(db.clone()))
             .data(mailer.clone())
             .service(Files::new("/static", "./static"))
             .service(resource("/").to(root))
+            .service(get_incident_details)
             .service(get_admin_login)
             .service(post_admin_login)
             .service(get_admin_dashboard)
@@ -458,7 +469,11 @@ async fn main() -> std::io::Result<()> {
             .service(get_admin_subscriptions)
             .service(post_admin_subscriptions)
             .service(post_email_subscribe)
+            .service(get_admin_incidents)
+            .service(post_admin_incidents)
             .service(get_email_confirm)
+            .service(get_admin_incidents_new)
+            .service(post_admin_incidents_new)
             .wrap(Logger::default())
             .wrap(Compress::default())
             .wrap(NormalizePath::default())

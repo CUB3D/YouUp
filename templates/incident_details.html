@@ -1,0 +1,12 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+<div class="container-md">
+    <p>Incident on {{incident.formatted_creation_time()}}</p>
+    <p>Incident report for {{project.name}}</p>
+
+    <p>list of incidents stuff</p>
+
+    <a href="/">Current status</a>
+</div>
+{% endblock %}
