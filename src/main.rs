@@ -128,7 +128,7 @@ pub struct ProjectStatus {
 mod test {
     use crate::compute_downtime_periods;
     use crate::models::Status;
-    use chrono::{Timelike, Utc};
+    use chrono::{TimeZone, Utc};
     use std::ops::Sub;
 
     #[actix_rt::test]
@@ -204,14 +204,14 @@ mod test {
     async fn compute_downtime_never_up() {
         let x = compute_downtime_periods(&[
             Status {
-                created: Utc::now().naive_utc().with_hour(1).unwrap(),
+                created: Utc.ymd(2020, 9, 25).and_hms(0, 0, 0).naive_utc(),
                 status_code: 404,
                 id: 1,
                 project: 0,
                 time: 10,
             },
             Status {
-                created: Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
+                created: Utc.ymd(2020, 9, 25).and_hms(12, 0, 0).naive_utc(),
                 status_code: 404,
                 id: 2,
                 project: 0,
@@ -227,24 +227,31 @@ mod test {
 
 async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime> {
     if !status_on_day.is_empty() && status_on_day.iter().all(|s| !s.is_success()) {
+        let first_day = status_on_day.first().unwrap().created;
+
+        // Get 00:00:00 on the next day
+        let end_of_first_day = first_day
+            .checked_add_signed(Duration::days(1))
+            .unwrap()
+            .with_hour(0)
+            .unwrap()
+            .with_minute(0)
+            .unwrap()
+            .with_second(0)
+            .unwrap();
+
+        // Find the duration between the last point that we have info about and the first point
+        // If the end of the day is in the future, then this downtime occurs today, and we will state that it is down until now
+        // If this day is in the past then we will assume it was down for the rest of the day
+        //TODO: we might want to check when it's up the next day
+        // also might want to look back to before the first result of the day?
+        let duration = Utc::now()
+            .naive_utc()
+            .min(end_of_first_day)
+            .signed_duration_since(first_day);
+
         return vec![Downtime {
-            duration: time_formatter::format_duration(
-                &Utc::now()
-                    .naive_utc()
-                    .min(
-                        status_on_day
-                            .first()
-                            .unwrap()
-                            .created
-                            .with_hour(0)
-                            .unwrap()
-                            .with_minute(59)
-                            .unwrap()
-                            .with_second(59)
-                            .unwrap(),
-                    )
-                    .signed_duration_since(status_on_day.first().unwrap().created),
-            ),
+            duration: time_formatter::format_duration(&duration),
         }];
     }
 
