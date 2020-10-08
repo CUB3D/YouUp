@@ -16,7 +16,7 @@ pub trait IncidentRepository {
 }
 
 impl IncidentRepository for Database {
-    fn get_incident_by_name(&self, name: &str) -> Vec<Incidents> {
+    fn get_incident_by_name(&self, _name: &str) -> Vec<Incidents> {
         unimplemented!()
     }
 
