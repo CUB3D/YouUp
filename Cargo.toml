@@ -16,7 +16,7 @@ rand = "0.7.3"
 
 serde = { version = "1.0.116", features = ["derive"] }
 
-askama = "0.8"
+askama = "0.9"
 
 chrono = "0.4.19"
 
@@ -36,7 +36,7 @@ lettre = { version = "0.10.0-alpha.2", features = ["smtp-transport"] }
 
 lazy_static = "1.4.0"
 
-tracing = { version = "0.1", features = ["log"] }
+tracing = { version = "0.1.21", features = ["log"] }
 
 uuid = "0.8.1"
 
