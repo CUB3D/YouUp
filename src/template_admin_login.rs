@@ -62,7 +62,7 @@ pub async fn post_admin_login(id: Identity, form: Form<LoginRequest>) -> impl Re
             .finish();
     }
 
-    return HttpResponse::PermanentRedirect()
+    HttpResponse::PermanentRedirect()
         .header(http::header::LOCATION, "/admin")
-        .finish();
+        .finish()
 }

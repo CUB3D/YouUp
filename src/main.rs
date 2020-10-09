@@ -180,14 +180,15 @@ mod test {
     async fn compute_downtime_end_of_day() {
         let x = compute_downtime_periods(&[
             Status {
-                created: Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
+                created: Utc.ymd(2020, 9, 25).and_hms(23, 0, 0).naive_utc(),
+                // Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
                 status_code: 200,
                 id: 2,
                 project: 0,
                 time: 10,
             },
             Status {
-                created: Utc::now().naive_utc().sub(chrono::Duration::hours(23)),
+                created: Utc.ymd(2020, 9, 25).and_hms(1, 0, 0).naive_utc(),
                 status_code: 404,
                 id: 1,
                 project: 0,
@@ -286,11 +287,13 @@ async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime> {
         let time_of_first_request = status_on_day.first().map(|s| s.created).unwrap();
 
         let end_of_day = time_of_first_request
-            .with_hour(23)
+            .checked_add_signed(Duration::days(1))
             .unwrap()
-            .with_minute(59)
+            .with_hour(0)
             .unwrap()
-            .with_second(59)
+            .with_minute(0)
+            .unwrap()
+            .with_second(0)
             .unwrap();
 
         // If this day was in the past then take its end_of_day however if we are considering today then define the end to be the current time
