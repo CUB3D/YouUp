@@ -424,7 +424,7 @@ pub async fn root(pool: Data<Database>, settings: Data<PersistedSettings>) -> im
 //TODO: SSO
 //TODO: embed support
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::from_env(Env::default().default_filter_or("info")).init();
