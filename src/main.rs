@@ -23,13 +23,14 @@ use crate::template_admin_dashboard::get_admin_dashboard;
 use crate::template_admin_dashboard::post_admin_dashboard;
 use crate::template_admin_incident::{get_admin_incidents, post_admin_incidents};
 use crate::template_admin_incident_new::{get_admin_incidents_new, post_admin_incidents_new};
-use crate::template_admin_login::post_admin_login;
+use crate::template_admin_login::{post_admin_login, AdminLogin};
 use crate::template_admin_subscriptions::{get_admin_subscriptions, post_admin_subscriptions};
 use crate::template_incident_details::get_incident_details;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
 use crate::update_job::run_update_job;
-use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_identity::{CookieIdentityPolicy, Identity, IdentityService};
+use actix_web::cookie::SameSite;
 use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::expression::sql_literal::sql;
 use env_logger::Env;
@@ -319,7 +320,11 @@ async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime> {
     downtime
 }
 
-pub async fn root(pool: Data<Database>, settings: Data<PersistedSettings>) -> impl Responder {
+pub async fn root(
+    pool: Data<Database>,
+    settings: Data<PersistedSettings>,
+    identity: Identity,
+) -> impl Responder {
     use self::schema::projects::dsl::*;
     use self::schema::status as stat;
 
@@ -416,6 +421,7 @@ pub async fn root(pool: Data<Database>, settings: Data<PersistedSettings>) -> im
         projects: p,
         history_size,
         incident_days,
+        admin_logged_in: identity.is_logged_in(),
         custom_script: settings.get_setting(CUSTOM_SCRIPT),
         custom_style: settings.get_setting(CUSTOM_STYLE),
         custom_html: settings.get_setting(CUSTOM_HTML),
@@ -476,10 +482,12 @@ async fn main() -> std::io::Result<()> {
             .service(post_admin_incidents_new)
             .wrap(Logger::default())
             .wrap(Compress::default())
+            //todo: actix3 .wrap(NormalizePath::new(TrailingSlash::MergeOnly))
             .wrap(NormalizePath::default())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&settings::private_key())
                     .name("you-up-auth")
+                    .same_site(SameSite::Lax)
                     .secure(false),
             ))
     })

@@ -15,6 +15,10 @@
         </div>
     </form>
 
+    {% if admin_logged_in %}
+        <a class="btn btn-primary" href="/admin/dashboard">Admin dashboard</a>
+    {% endif %}
+
     {% if self.is_operational_today() %}
         <div class="alert alert-success mt-1 mb-1" role="alert">All Systems Operational</div>
     {% endif %}

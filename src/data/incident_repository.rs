@@ -1,9 +1,9 @@
 use crate::db::Database;
 use crate::diesel::Insertable;
-use crate::models::{Incidents, NewIncident};
-use crate::schema::incidents;
+use crate::models::{Incidents, NewIncident, IncidentStatusUpdate, IncidentStatusType};
+use crate::schema::{incidents, incident_status_update, incident_status_type};
 use actix_web::web::Data;
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, BelongingToDsl};
 
 pub type IncidentRepositoryData = Data<Box<dyn IncidentRepository>>;
 
@@ -13,6 +13,8 @@ pub trait IncidentRepository {
 
     fn add_incident(&self, incident: NewIncident);
     fn get_incident_by_id(&self, id: i32) -> Incidents;
+
+    fn get_status_updates_by_incident(&self, incident: &Incidents) -> Vec<(IncidentStatusUpdate, IncidentStatusType)>;
 }
 
 impl IncidentRepository for Database {
@@ -40,5 +42,14 @@ impl IncidentRepository for Database {
             .first()
             .cloned()
             .unwrap()
+    }
+
+    fn get_status_updates_by_incident(&self, incident: &Incidents) -> Vec<(IncidentStatusUpdate, IncidentStatusType)> {
+        IncidentStatusUpdate::belonging_to(incident)
+            .order(incident_status_update::dsl::created.desc())
+            .inner_join(incident_status_type::table)
+            .filter(incident_status_type::dsl::id.eq(incident_status_update::dsl::id))
+            .load(&self.get().unwrap())
+            .expect("Unable to load status updates by incident")
     }
 }

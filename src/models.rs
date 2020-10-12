@@ -88,6 +88,13 @@ pub struct IncidentStatusUpdate {
     pub incident: i32,
 }
 
+impl IncidentStatusUpdate {
+    pub(crate) fn formatted_creation_time(&self) -> String {
+        Utc.from_utc_datetime(&self.created)
+            .to_rfc3339_opts(SecondsFormat::Secs, true)
+    }
+}
+
 #[derive(Identifiable, Queryable, Clone)]
 pub struct Setting {
     pub id: i32,
