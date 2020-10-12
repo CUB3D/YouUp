@@ -4,6 +4,7 @@ use actix_rt::spawn;
 
 use crate::diesel::GroupedBy;
 use actix_web::middleware::{Compress, Logger, NormalizePath};
+use actix_web::middleware::normalize::TrailingSlash;
 use actix_web::web::{resource, Data};
 use actix_web::HttpServer;
 use actix_web::{App, HttpResponse, Responder};
@@ -482,8 +483,8 @@ async fn main() -> std::io::Result<()> {
             .service(post_admin_incidents_new)
             .wrap(Logger::default())
             .wrap(Compress::default())
-            //todo: actix3 .wrap(NormalizePath::new(TrailingSlash::MergeOnly))
-            .wrap(NormalizePath::default())
+            .wrap(NormalizePath::new(TrailingSlash::MergeOnly))
+            // .wrap(NormalizePath::default())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&settings::private_key())
                     .name("you-up-auth")

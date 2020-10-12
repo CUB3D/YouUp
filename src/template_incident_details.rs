@@ -26,10 +26,10 @@ pub async fn get_incident_details(
     projects: ProjectRepositoryData,
 ) -> impl Responder {
     let request_id = Uuid::new_v4();
-    let span = tracing::info_span!("Incident", request_id = %request_id, incident_id = id.0);
+    let span = tracing::info_span!("Incident", request_id = %request_id, incident_id = id.0.0);
     let _guard = span.enter();
 
-    let incident = incidents.get_incident_by_id(id.0);
+    let incident = incidents.get_incident_by_id(id.0.0);
     //TODO: can we do this with a join?
     let project = projects.get_project_by_id(incident.project);
 
