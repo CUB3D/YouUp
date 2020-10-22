@@ -32,7 +32,7 @@ reqwest = { version = "0.10.8", features = ["gzip", "trust-dns"]}
 http = "0.2.1"
 tokio = { version = "0.2.22", features = ["full"] }
 
-lettre = { version = "0.10.0-alpha.2", features = ["smtp-transport"] }
+lettre = { version = "0.10.0-alpha.3", features = ["smtp-transport"] }
 
 lazy_static = "1.4.0"
 
