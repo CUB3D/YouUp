@@ -14,7 +14,7 @@ actix-identity = "0.3.1"
 
 rand = "0.7.3"
 
-serde = { version = "1.0.116", features = ["derive"] }
+serde = { version = "1.0.117", features = ["derive"] }
 
 askama = "0.9"
 
