@@ -7,6 +7,26 @@ use rand::{thread_rng, Rng};
 use std::env;
 use std::ops::Deref;
 
+pub fn get_host_protocol() -> String {
+    env::var("HOST_PROTOCOL").unwrap_or_else(|_| "http".to_string())
+}
+
+pub fn get_host_ip() -> String {
+    env::var("HOST_IP").unwrap_or_else(|_| "0.0.0.0".to_string())
+}
+
+pub fn get_host_port() -> String {
+    env::var("HOST_PORT").unwrap_or_else(|_| "8102".to_string())
+}
+
+pub fn get_host_domain() -> String {
+    env::var("HOST_DOMAIN").unwrap_or_else(|_| format!("{}:{}", get_host_ip(), get_host_port()))
+}
+
+pub fn get_host_url() -> String {
+    format!("{}://{}", get_host_protocol(), get_host_domain())
+}
+
 pub fn get_history_size() -> usize {
     env::var("HISTORY_SIZE")
         .unwrap_or_else(|_| "".to_string())

@@ -1,9 +1,9 @@
 use crate::db::Database;
 use crate::diesel::Insertable;
-use crate::models::{Incidents, NewIncident, IncidentStatusUpdate, IncidentStatusType};
-use crate::schema::{incidents, incident_status_update, incident_status_type};
+use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, NewIncident};
+use crate::schema::{incident_status_type, incident_status_update, incidents};
 use actix_web::web::Data;
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, BelongingToDsl};
+use diesel::{BelongingToDsl, ExpressionMethods, QueryDsl, RunQueryDsl};
 
 pub type IncidentRepositoryData = Data<Box<dyn IncidentRepository>>;
 
@@ -14,16 +14,21 @@ pub trait IncidentRepository {
     fn add_incident(&self, incident: NewIncident);
     fn get_incident_by_id(&self, id: i32) -> Incidents;
 
-    fn get_status_updates_by_incident(&self, incident: &Incidents) -> Vec<(IncidentStatusUpdate, IncidentStatusType)>;
+    fn get_status_updates_by_incident(
+        &self,
+        incident: &Incidents,
+    ) -> Vec<(IncidentStatusUpdate, IncidentStatusType)>;
 }
 
 impl IncidentRepository for Database {
     fn get_incident_by_name(&self, _name: &str) -> Vec<Incidents> {
-        unimplemented!()
+        unimplemented!("get_incident_by_name not impl")
     }
 
     fn get_all_incidents(&self) -> Vec<Incidents> {
-        unimplemented!()
+        incidents::table
+            .load(&self.get().unwrap())
+            .expect("Unable to get all incidents")
     }
 
     fn add_incident(&self, incident: NewIncident) {
@@ -44,7 +49,10 @@ impl IncidentRepository for Database {
             .unwrap()
     }
 
-    fn get_status_updates_by_incident(&self, incident: &Incidents) -> Vec<(IncidentStatusUpdate, IncidentStatusType)> {
+    fn get_status_updates_by_incident(
+        &self,
+        incident: &Incidents,
+    ) -> Vec<(IncidentStatusUpdate, IncidentStatusType)> {
         IncidentStatusUpdate::belonging_to(incident)
             .order(incident_status_update::dsl::created.desc())
             .inner_join(incident_status_type::table)

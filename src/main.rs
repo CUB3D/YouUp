@@ -3,8 +3,8 @@ use actix_files::Files;
 use actix_rt::spawn;
 
 use crate::diesel::GroupedBy;
-use actix_web::middleware::{Compress, Logger, NormalizePath};
 use actix_web::middleware::normalize::TrailingSlash;
+use actix_web::middleware::{Compress, Logger, NormalizePath};
 use actix_web::web::{resource, Data};
 use actix_web::HttpServer;
 use actix_web::{App, HttpResponse, Responder};
@@ -26,6 +26,8 @@ use crate::template_admin_incident::{get_admin_incidents, post_admin_incidents};
 use crate::template_admin_incident_new::{get_admin_incidents_new, post_admin_incidents_new};
 use crate::template_admin_login::{post_admin_login, AdminLogin};
 use crate::template_admin_subscriptions::{get_admin_subscriptions, post_admin_subscriptions};
+use crate::template_feed_atom::get_atom_feed;
+use crate::template_feed_rss::get_rss_feed;
 use crate::template_incident_details::get_incident_details;
 use crate::template_index::IndexTemplate;
 use crate::template_tooltip::StatusTooltipTemplate;
@@ -61,6 +63,8 @@ pub mod template_admin_incident;
 mod template_admin_incident_new;
 pub mod template_admin_login;
 pub mod template_admin_subscriptions;
+mod template_feed_atom;
+pub mod template_feed_rss;
 pub mod template_incident_details;
 pub mod template_index;
 pub mod template_tooltip;
@@ -451,9 +455,7 @@ async fn main() -> std::io::Result<()> {
         spawn(run_update_job(mailer.clone(), db.clone()));
     }
 
-    let port = env::var("HOST_PORT").unwrap_or_else(|_| "8102".to_string());
-    let ip = env::var("HOST_IP").unwrap_or_else(|_| "0.0.0.0".to_string());
-    let host = format!("{}:{}", ip, port);
+    let host = settings::get_host_domain();
 
     tracing::info!("Running on http://{}", host);
 
@@ -471,6 +473,8 @@ async fn main() -> std::io::Result<()> {
             .service(get_incident_details)
             .service(get_admin_login)
             .service(post_admin_login)
+            .service(get_rss_feed)
+            .service(get_atom_feed)
             .service(get_admin_dashboard)
             .service(post_admin_dashboard)
             .service(get_admin_subscriptions)
