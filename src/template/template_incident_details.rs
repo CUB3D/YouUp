@@ -1,6 +1,6 @@
 use crate::data::incident_repository::IncidentRepositoryData;
 use crate::data::project_repository::ProjectRepositoryData;
-use crate::models::{Incidents, Project, IncidentStatusUpdate, IncidentStatusType};
+use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, Project};
 use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
 use actix_web::get;
 use actix_web::web::{Data, Path};
@@ -29,11 +29,16 @@ pub async fn get_incident_details(
     let span = tracing::info_span!("Incident", request_id = %request_id, incident_id = id.0.0);
     let _guard = span.enter();
 
-    let incident = incidents.get_incident_by_id(id.0.0);
+    let incident = incidents.get_incident_by_id(id.0 .0);
     //TODO: can we do this with a join?
     let project = projects.get_project_by_id(incident.project);
 
     let status_updates = incidents.get_status_updates_by_incident(&incident);
+    tracing::debug!(
+        "Got {} status updates for incident {}",
+        status_updates.len(),
+        id.0 .0
+    );
 
     let template = IncidentDetailsTemplate {
         incident,

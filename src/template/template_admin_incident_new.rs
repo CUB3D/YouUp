@@ -1,11 +1,11 @@
 use crate::data::incident_repository::IncidentRepositoryData;
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::db::Database;
-use crate::models::{IncidentStatusType, NewIncident, Project};
+use crate::models::{IncidentStatusType, NewIncident, NewIncidentStatusUpdate, Project};
 use crate::schema::incident_status_type::dsl::incident_status_type;
 use crate::schema::projects::dsl::projects;
 use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
-use crate::template_admin_login::AdminLogin;
+use crate::template::template_admin_login::AdminLogin;
 use actix_identity::Identity;
 use actix_web::get;
 use actix_web::post;
@@ -100,6 +100,29 @@ pub async fn post_admin_incidents_new(
 
     incident_repo.add_incident(NewIncident {
         project: project_id,
+    });
+
+    let incident = incident_repo
+        .get_all_incidents()
+        .iter()
+        .map(|i| i.id)
+        .max()
+        .unwrap_or(0);
+    tracing::debug!("Adding status update to incident {}", incident);
+
+    let status_type = incident_repo
+        .get_incident_status_type_by_title(&form_data.status_type)
+        .expect("Unknown status type");
+    tracing::debug!(
+        "Using status type mapping {} -> {:?}",
+        form_data.status_type,
+        status_type
+    );
+
+    incident_repo.add_status_update(NewIncidentStatusUpdate {
+        incident,
+        message: form_data.message.clone(),
+        status_type: status_type.id,
     });
 
     admin_incidents_new(id, pool, settings)

@@ -2,7 +2,7 @@ use crate::db::Database;
 use crate::models::Project;
 use crate::schema::projects::dsl::projects;
 use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
-use crate::template_admin_login::AdminLogin;
+use crate::template::template_admin_login::AdminLogin;
 use actix_identity::Identity;
 use actix_web::get;
 use actix_web::post;

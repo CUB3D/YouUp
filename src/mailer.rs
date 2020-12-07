@@ -32,9 +32,9 @@ impl Mailer {
         let result = mailer.send(&email);
 
         if result.is_ok() {
-            println!("Email sent");
+            log::info!("Email sent");
         } else {
-            println!("Could not send email: {:?}", result);
+            log::warn!("Could not send email: {:?}", result);
         }
     }
 

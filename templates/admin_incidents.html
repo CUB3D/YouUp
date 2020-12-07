@@ -13,16 +13,16 @@
         <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Email</th>
-                <th scope="col">Confirmed</th>
+                <th scope="col">Date</th>
+                <th scope="col">Update status</th>
             </tr>
         </thead>
         <tbody>
-            {% for subscriber in subscriptions %}
+            {% for incident in incidents %}
                 <tr>
-                    <th scope="row">{{subscriber.id}}</th>
-                    <td>{{subscriber.email}}</td>
-                    <td>{{subscriber.confirmed}}</td>
+                    <th scope="row">{{incident.id}}</th>
+                    <td>{{incident.formatted_creation_time()}}</td>
+                    <td><a href="/admin/incident/{{incident.id}}/status/new" class="btn btn-primary">Update status</a></td>
                 </tr>
             {% endfor %}
         </tbody>

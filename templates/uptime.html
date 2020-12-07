@@ -1,0 +1,50 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+<div class="container-md">
+
+<!--    TODO: Should this be a common header -->
+    <div>{{ custom_html|safe }}</div>
+
+    <form action="/subscribe/email" method="post">
+        <div class="form-group">
+            <label for="inputEmail">Email</label>
+            <input type="email" class="form-control" id="inputEmail" placeholder="example@example.com" name="email">
+        </div>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" id="inputUsername" placeholder="Username" name="username" value="Subscribe">
+        </div>
+        <p>You can also subscribe via the <a href="/feed/rss">RSS</a> or <a href="/feed/atom">Atom</a> feed</p>
+    </form>
+
+    {% if admin_logged_in %}
+        <a class="btn btn-primary" href="/admin/dashboard">Admin dashboard</a>
+    {% endif %}
+
+    <select>
+        {% for project in projects %}
+            <option value={{project.name}}>{{project.name}}</option>
+        {% endfor %}
+    </select>
+
+    <div class="d-flex flex-row justify-content-around">
+        {% for month in months %}
+            <div>
+                <div class="d-block w-100"><p>{{month.name}}</p></div>
+                <div class="d-flex flex-wrap" style="width: 190px">
+                    {% for _padding_day in 0..month.first_day_offset %}
+                        <div style="margin: 1px; width: 25px; height: 25px; background: #00000000"></div>
+                    {% endfor %}
+                    {% for day in month.days %}
+                        <div style="margin: 1px; width: 25px; height: 25px; background: {{ day.get_colour() }}"></div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex flex-row">
+        <p class="ml-auto mr-auto">Powered by <a href="https://github.com/CUB3D/YouUp">YouUp 🙏</a></p>
+    </div>
+</div>
+{% endblock %}
