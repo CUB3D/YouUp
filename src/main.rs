@@ -68,7 +68,7 @@ pub mod update_job;
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    env_logger::from_env(Env::default().default_filter_or("info")).init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let db = db::get_db_connection();
     let mailer = Arc::new(Mailer::default());
