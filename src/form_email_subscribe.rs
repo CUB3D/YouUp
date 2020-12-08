@@ -7,7 +7,8 @@ use actix_web::web::{Data, Query};
 use actix_web::{web::Form, HttpResponse, Responder};
 use askama::Template;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
-use lettre::{Mailbox, Message};
+use lettre::message::Mailbox;
+use lettre::Message;
 use serde::Deserialize;
 use std::sync::Arc;
 

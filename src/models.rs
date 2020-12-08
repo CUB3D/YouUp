@@ -17,6 +17,12 @@ pub struct Project {
     pub enabled: bool,
 }
 
+impl Project {
+    pub fn formatted_description(&self) -> String {
+        self.description.clone().unwrap_or_else(|| "".to_string())
+    }
+}
+
 #[derive(Queryable, Clone)]
 pub struct Status {
     pub id: i32,
