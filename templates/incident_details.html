@@ -1,0 +1,25 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+<div class="container-md">
+    <h3 class="mt-4 text-center">Incident on {{incident.formatted_creation_time()}}</h3>
+    <p class="text-center">Incident report for {{project.name}}</p>
+
+    <div class="container-sm" style="max-width: 500px">
+        {% for status_update in status_updates %}
+        <div class="ml-auto mr-auto">
+            <div class="d-flex flex-row">
+                <p class="mr-auto">{{status_update.1.title}}</p>
+                <p>{{status_update.0.message}}</p>
+            </div>
+            <div class="d-flex flex-row">
+                <p class="ml-auto">{{status_update.0.formatted_creation_time()}}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <hr/>
+    <a href="/">Current status</a>
+</div>
+{% endblock %}

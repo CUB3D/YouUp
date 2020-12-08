@@ -1,0 +1,12 @@
+pub mod index;
+pub mod template_admin_dashboard;
+pub mod template_admin_incident;
+pub mod template_admin_incident_new;
+pub mod template_admin_incident_status_new;
+pub mod template_admin_login;
+pub mod template_admin_subscriptions;
+pub mod template_feed_atom;
+pub mod template_feed_rss;
+pub mod template_incident_details;
+pub mod template_tooltip;
+pub mod template_uptime;

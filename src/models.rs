@@ -68,7 +68,7 @@ pub struct NewIncident {
     pub project: i32,
 }
 
-#[derive(Identifiable, Queryable, Clone)]
+#[derive(Identifiable, Queryable, Clone, Debug)]
 #[table_name = "incident_status_type"]
 pub struct IncidentStatusType {
     pub id: i32,
@@ -83,6 +83,21 @@ pub struct IncidentStatusType {
 pub struct IncidentStatusUpdate {
     pub id: i32,
     pub created: chrono::NaiveDateTime,
+    pub status_type: i32,
+    pub message: String,
+    pub incident: i32,
+}
+
+impl IncidentStatusUpdate {
+    pub(crate) fn formatted_creation_time(&self) -> String {
+        Utc.from_utc_datetime(&self.created)
+            .to_rfc3339_opts(SecondsFormat::Secs, true)
+    }
+}
+
+#[derive(Insertable)]
+#[table_name = "incident_status_update"]
+pub struct NewIncidentStatusUpdate {
     pub status_type: i32,
     pub message: String,
     pub incident: i32,

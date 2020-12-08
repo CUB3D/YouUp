@@ -1,0 +1,33 @@
+{% extends "base_admin_template.html" %}
+
+{% block content_main %}
+<div class="container-md">
+
+    <a href="/admin/incidents/new" class="btn btn-primary">New Incident</a>
+
+    <div class="d-flex flex-row">
+        <h2 class="mr-auto">Incidents</h2>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Date</th>
+                <th scope="col">Update status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incident in incidents %}
+                <tr>
+                    <th scope="row">{{incident.id}}</th>
+                    <td>{{incident.formatted_creation_time()}}</td>
+                    <td><a href="/admin/incident/{{incident.id}}/status/new" class="btn btn-primary">Update status</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block class_subscriptions_active%}active{% endblock %}
