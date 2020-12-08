@@ -16,7 +16,7 @@ rand = "0.7.3"
 
 serde = { version = "1.0.118", features = ["derive"] }
 
-askama = "0.9"
+askama = "0.10"
 
 chrono = "0.4.19"
 
