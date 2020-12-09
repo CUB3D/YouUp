@@ -25,5 +25,5 @@ pub fn get_db_connection() -> Database {
         .max_size(4)
         .test_on_check_out(true)
         .build(manager)
-        .unwrap()
+        .expect("Cant create db pool")
 }

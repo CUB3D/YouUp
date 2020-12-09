@@ -74,6 +74,6 @@ pub async fn run_update_job(mailer: Arc<Mailer>, db: Database) {
             }
         }
 
-        tokio::time::sleep(Duration::from_secs(90)).await;
+        actix_rt::time::delay_for(Duration::from_secs(90)).await;
     }
 }
