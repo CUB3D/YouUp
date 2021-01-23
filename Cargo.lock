@@ -3235,7 +3235,7 @@ dependencies = [
  "lazy_static",
  "lettre",
  "log",
- "rand 0.7.3",
+ "rand 0.8.2",
  "reqwest",
  "rss",
  "serde",

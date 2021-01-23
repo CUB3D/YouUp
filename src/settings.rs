@@ -56,7 +56,11 @@ pub fn admin_username() -> String {
 }
 
 lazy_static! {
-    static ref ADMIN_PASSWORD: String = thread_rng().sample_iter(&Alphanumeric).take(15).collect();
+    static ref ADMIN_PASSWORD: String = thread_rng()
+        .sample_iter(&Alphanumeric)
+        .map(char::from)
+        .take(15)
+        .collect();
 }
 
 lazy_static! {
