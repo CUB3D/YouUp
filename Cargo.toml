@@ -18,7 +18,7 @@ chrono = "0.4.19"
 diesel = { version = "1.4.4", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
-log = "0.4.13"
+log = "0.4.14"
 env_logger = "0.8.2"
 reqwest = { version = "0.11.0", features = ["gzip", "trust-dns"]}
 http = "0.2.3"
