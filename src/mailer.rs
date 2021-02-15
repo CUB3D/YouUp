@@ -58,7 +58,7 @@ impl Mailer {
                 .from(from.parse().unwrap())
                 .header(ContentType::html())
                 .subject(&title)
-                .body(message_body)
+                .body(message_body.to_string())
                 .unwrap();
 
             self.send_message(email);

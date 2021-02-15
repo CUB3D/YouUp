@@ -30,6 +30,7 @@ use crate::template::template_admin_subscriptions::{
 };
 use crate::template::template_feed_atom::get_atom_feed;
 use crate::template::template_feed_rss::get_rss_feed;
+use crate::template::template_history::get_incident_history;
 use crate::template::template_incident_details::get_incident_details;
 use crate::template::template_uptime::get_uptime;
 use crate::update_job::run_update_job;
@@ -38,7 +39,6 @@ use actix_web::cookie::SameSite;
 use env_logger::Env;
 use std::env;
 use std::sync::Arc;
-use crate::template::template_history::get_incident_history;
 
 #[macro_use]
 extern crate diesel;

@@ -7,7 +7,7 @@ pub mod template_admin_login;
 pub mod template_admin_subscriptions;
 pub mod template_feed_atom;
 pub mod template_feed_rss;
+pub mod template_history;
 pub mod template_incident_details;
 pub mod template_tooltip;
 pub mod template_uptime;
-pub mod template_history;
