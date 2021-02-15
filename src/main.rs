@@ -38,6 +38,7 @@ use actix_web::cookie::SameSite;
 use env_logger::Env;
 use std::env;
 use std::sync::Arc;
+use crate::template::template_history::get_incident_history;
 
 #[macro_use]
 extern crate diesel;
@@ -99,6 +100,7 @@ async fn main() -> std::io::Result<()> {
             .service(post_admin_login)
             .service(get_rss_feed)
             .service(get_atom_feed)
+            .service(get_incident_history)
             .service(get_admin_dashboard)
             .service(post_admin_dashboard)
             .service(get_admin_subscriptions)

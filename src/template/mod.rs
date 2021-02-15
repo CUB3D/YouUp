@@ -10,3 +10,4 @@ pub mod template_feed_rss;
 pub mod template_incident_details;
 pub mod template_tooltip;
 pub mod template_uptime;
+pub mod template_history;
