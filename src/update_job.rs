@@ -6,6 +6,7 @@ use reqwest::Client;
 
 use crate::db::Database;
 use crate::mailer::Mailer;
+use chrono::Utc;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -51,23 +52,15 @@ pub async fn run_update_job(mailer: Arc<Mailer>, db: Database) {
             if let Ok(stat) = most_recent_status {
                 if let Some(stat2) = stat.first() {
                     if stat2.is_success() && !status.is_success() {
-                        // let email = Message::builder()
-                        //     // Addresses can be specified by the tuple (email, alias)
-                        //     .to(crate::settings::get_email_addr()
-                        //         .parse()
-                        //         .expect("Unable to parse alert email"))
-                        //     .from(.parse().unwrap())
-                        //     .subject()
-                        //     .body("Service is now down")
-                        //     .unwrap();
-
-                        // mailer.send_message(email);
-
                         mailer.send_to_subscribers(
                             &db,
                             "YouUp <alerts@you-up.net>",
                             format!("Alert in project '{}'", domain.name),
-                            "Service is now down",
+                            format!(
+                                "Service is now down, received a status code of {} at {}",
+                                status.as_str(),
+                                Utc::now().format("%+")
+                            ),
                         )
                     }
                 }

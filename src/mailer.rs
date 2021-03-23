@@ -43,7 +43,7 @@ impl Mailer {
         db: &Database,
         from: &str,
         title: String,
-        message_body: &str,
+        message_body: String,
     ) {
         use crate::schema::email_subscriptions;
 
