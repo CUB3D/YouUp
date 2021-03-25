@@ -10,9 +10,11 @@ use dotenv::dotenv;
 
 use crate::data::incident_repository::IncidentRepository;
 use crate::data::project_repository::ProjectRepository;
+use crate::data::sms_subscription_repository::SmsSubscriptionRepository;
 use crate::data::status_repository::StatusRepository;
 use crate::form_email_subscribe::{get_email_confirm, post_email_subscribe};
-use crate::mailer::Mailer;
+use crate::notifications::mailer::Mailer;
+use crate::notifications::sms::SMSNotifier;
 use crate::settings::PersistedSettings;
 use crate::template::index::status_day::StatusDay;
 use crate::template::index::template_index::root;
@@ -28,6 +30,7 @@ use crate::template::template_admin_login::{get_admin_login, post_admin_login};
 use crate::template::template_admin_subscriptions::{
     get_admin_subscriptions, post_admin_subscriptions,
 };
+use crate::template::template_embed::get_embed;
 use crate::template::template_feed_atom::get_atom_feed;
 use crate::template::template_feed_rss::get_rss_feed;
 use crate::template::template_history::get_incident_history;
@@ -50,8 +53,8 @@ extern crate lazy_static;
 pub mod data;
 pub mod db;
 pub mod form_email_subscribe;
-pub mod mailer;
 pub mod models;
+pub mod notifications;
 pub mod project_status;
 pub mod schema;
 pub mod settings;
@@ -61,10 +64,7 @@ pub mod time_utils;
 pub mod update_job;
 
 //TODO: REST API
-//TODO: SMS, webhooks, twitter, rss, atom
-//TODO: multiple accounts
-//TODO: SSO
-//TODO: embed support
+//TODO: webhooks, twitter
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -73,9 +73,15 @@ async fn main() -> std::io::Result<()> {
 
     let db = db::get_db_connection();
     let mailer = Arc::new(Mailer::default());
+    let sms = Arc::new(SMSNotifier::default());
 
     if env::var("UPDATE").unwrap_or_else(|_| "1".to_string()) == "1" {
-        spawn(run_update_job(mailer.clone(), db.clone()));
+        spawn(run_update_job(
+            mailer.clone(),
+            sms.clone(),
+            db.clone(),
+            Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>,
+        ));
     }
 
     let host = settings::get_host_domain();
@@ -90,8 +96,10 @@ async fn main() -> std::io::Result<()> {
             .data(Box::new(db.clone()) as Box<dyn ProjectRepository>)
             .data(Box::new(db.clone()) as Box<dyn IncidentRepository>)
             .data(Box::new(db.clone()) as Box<dyn StatusRepository>)
+            .data(Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>)
             .data(PersistedSettings::new(db.clone()))
             .data(mailer.clone())
+            .data(sms.clone())
             .service(Files::new("/static", "./static"))
             .service(resource("/").to(root))
             .service(get_uptime)
@@ -101,6 +109,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_rss_feed)
             .service(get_atom_feed)
             .service(get_incident_history)
+            .service(get_embed)
             .service(get_admin_dashboard)
             .service(post_admin_dashboard)
             .service(get_admin_subscriptions)

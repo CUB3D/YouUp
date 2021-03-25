@@ -80,6 +80,22 @@ pub fn private_key() -> Vec<u8> {
         .unwrap_or_else(|_| PRIVATE_KEY.to_vec())
 }
 
+pub fn twilio_account_id() -> String {
+    env::var("TWILIO_ACCOUNT_ID").unwrap_or_else(|_| "".to_string())
+}
+
+pub fn twilio_auth_token() -> String {
+    env::var("TWILIO_AUTH_TOKEN").unwrap_or_else(|_| "".to_string())
+}
+
+pub fn twilio_contact_number() -> String {
+    env::var("TWILIO_CONTACT_NUMBER").unwrap_or_else(|_| "".to_string())
+}
+
+pub fn sms_enabled() -> bool {
+    env::var("SMS_NOTIFICATIONS").unwrap_or_else(|_| "false".to_string()) == "true"
+}
+
 pub struct PersistedSettings {
     db: Database,
 }

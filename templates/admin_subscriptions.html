@@ -8,6 +8,9 @@
         <h2 class="mr-auto">Subscriptions</h2>
     </div>
 
+    <div class="d-flex flex-row">
+        <h2 class="mr-auto">Email</h2>
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -26,6 +29,30 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if sms_enabled %}
+    <div class="d-flex flex-row">
+        <h2 class="mr-auto">SMS</h2>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Phone No.</th>
+            <th scope="col">Confirmed</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for subscriber in sms_subscriptions %}
+        <tr>
+            <th scope="row">{{subscriber.id}}</th>
+            <td>{{subscriber.phone_number}}</td>
+            <td>{{subscriber.confirmed}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
 </div>
 {% endblock %}
 

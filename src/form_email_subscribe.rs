@@ -1,6 +1,6 @@
 use crate::db::Database;
-use crate::mailer::Mailer;
 use crate::models::{EmailSubscription, NewEmailSubscription};
+use crate::notifications::mailer::Mailer;
 use actix_web::get;
 use actix_web::post;
 use actix_web::web::{Data, Query};
@@ -11,6 +11,7 @@ use lettre::message::Mailbox;
 use lettre::Message;
 use serde::Deserialize;
 use std::sync::Arc;
+use uuid::Uuid;
 
 #[derive(Template)]
 #[template(path = "email_confirm_subscription.html")]
@@ -32,8 +33,8 @@ pub async fn post_email_subscribe(
 ) -> impl Responder {
     use crate::schema::email_subscriptions;
 
-    //TODO: add a tracking id (uuid?)
-    let span = tracing::info_span!("Email subscribe");
+    let request_id = Uuid::new_v4();
+    let span = tracing::info_span!("Email subscribe", request_id = %request_id);
     let _span_guard = span.enter();
 
     let parsed_email = form.email.clone().parse::<Mailbox>();

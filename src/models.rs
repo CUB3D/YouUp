@@ -3,6 +3,7 @@ use super::schema::incident_status_type;
 use super::schema::incident_status_update;
 use super::schema::incidents;
 use super::schema::settings;
+use super::schema::sms_subscriptions;
 use super::schema::status;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
@@ -129,4 +130,12 @@ pub struct EmailSubscription {
 #[table_name = "email_subscriptions"]
 pub struct NewEmailSubscription {
     pub email: String,
+}
+
+#[derive(Identifiable, Queryable, Clone)]
+pub struct SmsSubscription {
+    pub id: i32,
+    pub created: chrono::NaiveDateTime,
+    pub phone_number: String,
+    pub confirmed: bool,
 }
