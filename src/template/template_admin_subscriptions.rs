@@ -1,6 +1,8 @@
+use crate::data::sms_subscription_repository::SmsSubscriberRepositoryData;
 use crate::db::Database;
-use crate::models::EmailSubscription;
+use crate::models::{EmailSubscription, SmsSubscription};
 use crate::schema::email_subscriptions::dsl::email_subscriptions;
+use crate::settings;
 use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
 use crate::template::template_admin_login::AdminLogin;
 use actix_identity::Identity;
@@ -16,7 +18,9 @@ use uuid::Uuid;
 #[derive(Template)]
 #[template(path = "admin_subscriptions.html")]
 pub struct AdminSubscriptionTemplate {
+    pub sms_enabled: bool,
     pub subscriptions: Vec<EmailSubscription>,
+    pub sms_subscriptions: Vec<SmsSubscription>,
     pub custom_script: String,
     pub custom_style: String,
 }
@@ -28,6 +32,7 @@ async fn admin_subscription(
     id: Identity,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
+    sms_subscriptions_repo: SmsSubscriberRepositoryData,
 ) -> impl Responder {
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin subscription", request_id = %request_id);
@@ -45,6 +50,8 @@ async fn admin_subscription(
 
     let template = AdminSubscriptionTemplate {
         subscriptions,
+        sms_subscriptions: sms_subscriptions_repo.get_all(),
+        sms_enabled: settings::sms_enabled(),
         custom_script: settings.get_setting(CUSTOM_SCRIPT),
         custom_style: settings.get_setting(CUSTOM_STYLE),
     }
@@ -58,8 +65,9 @@ pub async fn get_admin_subscriptions(
     id: Identity,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
+    sms_subscriptions_repo: SmsSubscriberRepositoryData,
 ) -> impl Responder {
-    admin_subscription(id, pool, settings).await
+    admin_subscription(id, pool, settings, sms_subscriptions_repo).await
 }
 
 //TODO: is this needed
@@ -69,6 +77,7 @@ pub async fn post_admin_subscriptions(
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
     _updates: Option<Form<ProjectUpdate>>,
+    sms_subscriptions_repo: SmsSubscriberRepositoryData,
 ) -> impl Responder {
-    admin_subscription(id, pool, settings).await
+    admin_subscription(id, pool, settings, sms_subscriptions_repo).await
 }

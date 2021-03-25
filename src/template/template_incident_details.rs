@@ -33,6 +33,14 @@ pub async fn get_incident_details(
     //TODO: can we do this with a join?
     let project = projects.get_project_by_id(incident.project);
 
+    if project.is_none() {
+        return HttpResponse::PermanentRedirect()
+            .header(http::header::LOCATION, "/")
+            .finish();
+    }
+
+    let project = project.unwrap();
+
     let status_updates = incidents.get_status_updates_by_incident(&incident);
     tracing::debug!(
         "Got {} status updates for incident {}",

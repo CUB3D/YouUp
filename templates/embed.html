@@ -1,0 +1,108 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+<div class="container-md">
+<!--    <form action="/subscribe/email" method="post">-->
+<!--        <div class="form-group">-->
+<!--            <label for="inputEmail">Email</label>-->
+<!--            <input type="email" class="form-control" id="inputEmail" placeholder="example@example.com" name="email">-->
+<!--        </div>-->
+<!--        <div class="form-group">-->
+<!--            <input type="submit" class="btn btn-primary" id="inputUsername" placeholder="Username" name="username" value="Subscribe">-->
+<!--        </div>-->
+<!--        <p>You can also subscribe via the <a href="/feed/rss">RSS</a> or <a href="/feed/atom">Atom</a> feed</p>-->
+<!--    </form>-->
+
+<!--    <div class="d-flex flex-row">-->
+<!--        <h2 class="mr-auto">Current Status</h2>-->
+<!--        <p class="align-self-end mb-0 font-weight-light">Data from the past {{ history_size }} days. <a href="/uptime">View historical uptime.</a></p>-->
+<!--    </div>-->
+
+    <div class="card mt-2 mb-2">
+        <div class="card-header">
+            <div class="d-flex flex-row">
+                <h5 class="card-title">{{ proj_status.project.name }}</h5>
+                {% if proj_status.project.description.is_some() %}
+                <img class="ml-1 mr-1" src="/static/images/help-circle.svg" width="24px" height="24px"
+                     data-toggle="tooltip" data-placement="top" data-html="true"
+                     title="{{ proj_status.project.description.as_ref().unwrap() }}"/>
+                {% endif %}
+                <div class="mr-auto"></div>
+                <h5 class="card-title" style="color: {{ proj_status.today.get_overall_status().get_colour() }}">{{ proj_status.today.get_overall_status() }}</h5>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-row justify-content-around">
+                {% for day in proj_status.days %}
+                <div style="margin-left: 1px; margin-right: 1px; width: 100%; height: 25px; background: {{ day.get_overall_status().get_colour() }}"
+                     data-toggle="tooltip" data-placement="top" data-html="true" title="{{ day.get_tooltip() }}"></div>
+                {% endfor %}
+            </div>
+            <div class="d-flex flex-row">
+                <p class="mr-auto font-weight-light">{{ history_size }} days ago</p>
+                <p class="font-weight-light">Today</p>
+            </div>
+            <canvas id="{{ proj_status.project.id }}-performance" style="width: 100%; height: 200px"></canvas>
+        </div>
+    </div>
+    <script>
+    {
+        let perf_data = [
+            {% for status in proj_status.today.get_chart_status() %}{{status.time}},{% endfor %}
+        ];
+        perf_data.reverse();
+
+        let perf_labels = [
+            {% for status in proj_status.today.get_chart_status() %}"{{ status.formatted_creation_time() }}",{% endfor %}
+        ];
+        perf_labels.reverse();
+        perf_labels = perf_labels.map((t) => {
+            let x = new Date(Date.parse(t)).toLocaleString().split(", ")[1].split(":");
+            return x[0] + ':' + x[1] + ' ' + x[2].split(" ")[1];
+        });
+
+        let smallest_data = Math.max(0, Math.min(...perf_data) - Math.max(...perf_data) * 0.05);
+
+        let ctx = document.getElementById('{{ proj_status.project.id }}-performance');
+        new Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: perf_labels,
+                  datasets: [{
+                    cubicInterpolationMode: 'monotonic',
+                    data: perf_data,
+                    borderColor: 'orange',
+                    backgroundColor: 'transparent',
+                    pointBorderColor: 'orange',
+                    pointBackgroundColor: 'rgba(255,150,0,0.5)',
+                  }]
+          },
+            options: {
+                    legend: {
+                        display: false,
+                    },
+                scales: {
+                    yAxes: [{
+                        scaleLabel: {
+                          display: true,
+                          labelString: "Ms"
+                        },
+                        display: true,
+                        ticks: {
+                            suggestedMin: smallest_data,    // minimum will be 0, unless there is a lower value.
+                        }
+                    }],
+                    xAxes: [{
+                        scaleLabel: {
+                            display: true,
+                            labelString: "Time"
+                        },
+                        display: true,
+                    }]
+                }
+            }
+        });
+    }
+    </script>
+</div>
+{% endblock %}

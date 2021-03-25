@@ -4,13 +4,20 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use http::status::StatusCode;
 use reqwest::Client;
 
+use crate::data::sms_subscription_repository::SmsSubscriberRepository;
 use crate::db::Database;
-use crate::mailer::Mailer;
+use crate::notifications::mailer::Mailer;
+use crate::notifications::sms::SMSNotifier;
 use chrono::Utc;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-pub async fn run_update_job(mailer: Arc<Mailer>, db: Database) {
+pub async fn run_update_job(
+    mailer: Arc<Mailer>,
+    sms: Arc<SMSNotifier>,
+    db: Database,
+    sms_subscription_repo: SmsSubscriberRepository,
+) {
     let c = Client::builder().build().unwrap();
 
     loop {
@@ -61,7 +68,17 @@ pub async fn run_update_job(mailer: Arc<Mailer>, db: Database) {
                                 status.as_str(),
                                 Utc::now().format("%+")
                             ),
+                        );
+
+                        sms.notify_all_subscribers(
+                            &sms_subscription_repo,
+                            &format!(
+                                "YouUp, Project '{}' down, code {}",
+                                domain.name,
+                                status.as_str()
+                            ),
                         )
+                        .await;
                     }
                 }
             }
