@@ -5,6 +5,7 @@ use super::schema::incidents;
 use super::schema::settings;
 use super::schema::sms_subscriptions;
 use super::schema::status;
+use super::schema::webhook_subscriptions;
 use chrono::{SecondsFormat, TimeZone, Utc};
 use http::StatusCode;
 
@@ -46,7 +47,7 @@ impl Status {
     }
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Clone)]
 #[table_name = "status"]
 pub struct NewStatus {
     pub project: i32,
@@ -138,4 +139,12 @@ pub struct SmsSubscription {
     pub created: chrono::NaiveDateTime,
     pub phone_number: String,
     pub confirmed: bool,
+}
+
+#[derive(Identifiable, Queryable, Clone)]
+pub struct WebhookSubscription {
+    pub id: i32,
+    pub created: chrono::NaiveDateTime,
+    pub url: String,
+    pub enabled: bool,
 }

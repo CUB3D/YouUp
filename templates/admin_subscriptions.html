@@ -53,6 +53,28 @@
         </tbody>
     </table>
     {% endif %}
+
+    <div class="d-flex flex-row">
+        <h2 class="mr-auto">WebHooks</h2>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Url</th>
+            <th scope="col">Enabled</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for subscriber in webhook_subscriptions %}
+        <tr>
+            <th scope="row">{{subscriber.id}}</th>
+            <td>{{subscriber.url}}</td>
+            <td>{{subscriber.enabled}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 

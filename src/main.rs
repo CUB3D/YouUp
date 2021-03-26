@@ -12,9 +12,11 @@ use crate::data::incident_repository::IncidentRepository;
 use crate::data::project_repository::ProjectRepository;
 use crate::data::sms_subscription_repository::SmsSubscriptionRepository;
 use crate::data::status_repository::StatusRepository;
+use crate::data::webhook_subscription_repository::WebhookSubscriptionRepository;
 use crate::form_email_subscribe::{get_email_confirm, post_email_subscribe};
 use crate::notifications::mailer::Mailer;
 use crate::notifications::sms::SMSNotifier;
+use crate::notifications::webhook::WebhookNotifier;
 use crate::settings::PersistedSettings;
 use crate::template::index::status_day::StatusDay;
 use crate::template::index::template_index::root;
@@ -36,7 +38,7 @@ use crate::template::template_feed_rss::get_rss_feed;
 use crate::template::template_history::get_incident_history;
 use crate::template::template_incident_details::get_incident_details;
 use crate::template::template_uptime::get_uptime;
-use crate::update_job::run_update_job;
+use crate::update_job::{process_pending_status_updates_job, run_update_job};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::cookie::SameSite;
 use env_logger::Env;
@@ -64,7 +66,7 @@ pub mod time_utils;
 pub mod update_job;
 
 //TODO: REST API
-//TODO: webhooks, twitter
+//TODO: twitter
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -74,21 +76,23 @@ async fn main() -> std::io::Result<()> {
     let db = db::get_db_connection();
     let mailer = Arc::new(Mailer::default());
     let sms = Arc::new(SMSNotifier::default());
+    let webhook = Arc::new(WebhookNotifier::default());
 
     if env::var("UPDATE").unwrap_or_else(|_| "1".to_string()) == "1" {
         spawn(run_update_job(
             mailer.clone(),
             sms.clone(),
+            webhook.clone(),
             db.clone(),
             Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>,
+            Box::new(db.clone()) as Box<dyn WebhookSubscriptionRepository>,
         ));
+        spawn(process_pending_status_updates_job(db.clone()));
     }
 
     let host = settings::get_host_domain();
 
     tracing::info!("Running on http://{}", host);
-
-    //TODO: store in config
 
     HttpServer::new(move || {
         App::new()
@@ -97,9 +101,11 @@ async fn main() -> std::io::Result<()> {
             .data(Box::new(db.clone()) as Box<dyn IncidentRepository>)
             .data(Box::new(db.clone()) as Box<dyn StatusRepository>)
             .data(Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>)
+            .data(Box::new(db.clone()) as Box<dyn WebhookSubscriptionRepository>)
             .data(PersistedSettings::new(db.clone()))
             .data(mailer.clone())
             .data(sms.clone())
+            .data(webhook.clone())
             .service(Files::new("/static", "./static"))
             .service(resource("/").to(root))
             .service(get_uptime)

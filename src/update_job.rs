@@ -5,25 +5,71 @@ use http::status::StatusCode;
 use reqwest::Client;
 
 use crate::data::sms_subscription_repository::SmsSubscriberRepository;
+use crate::data::webhook_subscription_repository::WebhookSubscriberRepository;
 use crate::db::Database;
 use crate::notifications::mailer::Mailer;
 use crate::notifications::sms::SMSNotifier;
+use crate::notifications::webhook::{WebhookNotifier, WebhookPayload};
+use crate::schema::projects::dsl::*;
+use crate::schema::status as stat;
 use chrono::Utc;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+use std::sync::Mutex;
 use std::time::{Duration, Instant};
+
+lazy_static! {
+    static ref PENDING_STATUS_UPDATES: Mutex<Vec<NewStatus>> = Mutex::new(Vec::new());
+}
+
+pub fn submit_status(db: Database, status: NewStatus) {
+    match diesel::insert_into(stat::table)
+        .values(status.clone())
+        .execute(&db.get().unwrap())
+    {
+        Ok(_) => {}
+        Err(_) => {
+            if let Ok(mut lock) = PENDING_STATUS_UPDATES.lock() {
+                lock.deref_mut().push(status)
+            }
+        }
+    }
+}
+
+pub async fn process_pending_status_updates_job(db: Database) {
+    let _span = tracing::info_span!("Process pending updates job");
+
+    loop {
+        if let Ok(mut lock) = PENDING_STATUS_UPDATES.lock() {
+            let status = lock.deref().first();
+            if let Some(status) = status {
+                if diesel::insert_into(stat::table)
+                    .values(status)
+                    .execute(&db.get().unwrap())
+                    .is_ok()
+                {
+                    lock.deref_mut().remove(0);
+                }
+            }
+        }
+
+        actix_rt::time::delay_for(Duration::from_secs(90)).await;
+    }
+}
 
 pub async fn run_update_job(
     mailer: Arc<Mailer>,
     sms: Arc<SMSNotifier>,
+    webhook: Arc<WebhookNotifier>,
     db: Database,
     sms_subscription_repo: SmsSubscriberRepository,
+    webhook_subscription_repo: WebhookSubscriberRepository,
 ) {
+    let _span = tracing::info_span!("Update Job");
+
     let c = Client::builder().build().unwrap();
 
     loop {
-        use crate::schema::projects::dsl::*;
-        use crate::schema::status as stat;
-
         let projects_list = projects
             .load::<Project>(&db.get().unwrap())
             .expect("Unable to load projects");
@@ -46,15 +92,15 @@ pub async fn run_update_job(
                 .limit(1)
                 .load::<Status>(&db.get().unwrap());
 
-            diesel::insert_into(stat::table)
-                .values(NewStatus {
+            submit_status(
+                db.clone(),
+                NewStatus {
                     project: domain.id,
                     //TODO: change the type of this field
                     time: req_duration.as_millis() as i32,
                     status_code: status.as_u16() as i32,
-                })
-                .execute(&db.get().unwrap())
-                .unwrap();
+                },
+            );
 
             if let Ok(stat) = most_recent_status {
                 if let Some(stat2) = stat.first() {
@@ -79,6 +125,18 @@ pub async fn run_update_job(
                             ),
                         )
                         .await;
+
+                        webhook
+                            .notify_all_subscribers(
+                                &webhook_subscription_repo,
+                                WebhookPayload {
+                                    project_id: domain.id,
+                                    project_name: domain.name.clone(),
+                                    status_code: status.as_u16(),
+                                    time: Utc::now().format("%+").to_string(),
+                                },
+                            )
+                            .await;
                     }
                 }
             }
