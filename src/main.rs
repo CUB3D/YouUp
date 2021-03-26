@@ -28,6 +28,9 @@ use crate::template::template_admin_incident_status_new::{
     get_admin_incident_status_new, post_admin_incident_status_new,
 };
 use crate::template::template_admin_login::{get_admin_login, post_admin_login};
+use crate::template::template_admin_project_details::{
+    get_admin_project_details, post_admin_project_details,
+};
 use crate::template::template_admin_subscriptions::{
     get_admin_subscriptions, post_admin_subscriptions,
 };
@@ -51,6 +54,7 @@ use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use crate::template::template_admin_project_details::{get_admin_project_details, post_admin_project_details};
 
 #[macro_use]
 extern crate diesel;
@@ -158,6 +162,8 @@ async fn main() -> std::io::Result<()> {
             .service(get_embed)
             .service(get_admin_dashboard)
             .service(post_admin_dashboard)
+            .service(get_admin_project_details)
+            .service(post_admin_project_details)
             .service(get_admin_subscriptions)
             .service(post_admin_subscriptions)
             .service(post_email_subscribe)
