@@ -5,9 +5,11 @@ use http::status::StatusCode;
 use reqwest::Client;
 
 use crate::data::sms_subscription_repository::SmsSubscriberRepository;
+use crate::data::webhook_subscription_repository::WebhookSubscriberRepository;
 use crate::db::Database;
 use crate::notifications::mailer::Mailer;
 use crate::notifications::sms::SMSNotifier;
+use crate::notifications::webhook::{WebhookNotifier, WebhookPayload};
 use crate::schema::projects::dsl::*;
 use crate::schema::status as stat;
 use chrono::Utc;
@@ -41,22 +43,27 @@ pub async fn process_pending_status_updates_job(db: Database) {
         if let Ok(mut lock) = PENDING_STATUS_UPDATES.lock() {
             let status = lock.deref().first();
             if let Some(status) = status {
-                if let Ok(_) = diesel::insert_into(stat::table)
+                if diesel::insert_into(stat::table)
                     .values(status)
                     .execute(&db.get().unwrap())
+                    .is_ok()
                 {
                     lock.deref_mut().remove(0);
                 }
             }
         }
+
+        actix_rt::time::delay_for(Duration::from_secs(90)).await;
     }
 }
 
 pub async fn run_update_job(
     mailer: Arc<Mailer>,
     sms: Arc<SMSNotifier>,
+    webhook: Arc<WebhookNotifier>,
     db: Database,
     sms_subscription_repo: SmsSubscriberRepository,
+    webhook_subscription_repo: WebhookSubscriberRepository,
 ) {
     let _span = tracing::info_span!("Update Job");
 
@@ -118,6 +125,18 @@ pub async fn run_update_job(
                             ),
                         )
                         .await;
+
+                        webhook
+                            .notify_all_subscribers(
+                                &webhook_subscription_repo,
+                                WebhookPayload {
+                                    project_id: domain.id,
+                                    project_name: domain.name.clone(),
+                                    status_code: status.as_u16(),
+                                    time: Utc::now().format("%+").to_string(),
+                                },
+                            )
+                            .await;
                     }
                 }
             }
