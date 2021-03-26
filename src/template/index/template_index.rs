@@ -6,7 +6,7 @@ use crate::diesel::GroupedBy;
 use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, Project, Status};
 use crate::project_status::ProjectStatusTypes;
 use crate::settings::{PersistedSettings, CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE};
-use crate::template::index::downtime::{Downtime, compute_downtime_periods};
+use crate::template::index::downtime::{compute_downtime_periods, Downtime};
 use crate::template::index::status_day::StatusDay;
 use crate::template::template_admin_login::AdminLogin;
 use crate::{settings, time_formatter};

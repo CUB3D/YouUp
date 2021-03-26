@@ -29,6 +29,9 @@ use crate::template::template_admin_incident_status_new::{
     get_admin_incident_status_new, post_admin_incident_status_new,
 };
 use crate::template::template_admin_login::{get_admin_login, post_admin_login};
+use crate::template::template_admin_project_details::{
+    get_admin_project_details, post_admin_project_details,
+};
 use crate::template::template_admin_subscriptions::{
     get_admin_subscriptions, post_admin_subscriptions,
 };
@@ -44,7 +47,6 @@ use actix_web::cookie::SameSite;
 use env_logger::Env;
 use std::env;
 use std::sync::Arc;
-use crate::template::template_admin_project_details::{get_admin_project_details, post_admin_project_details};
 
 #[macro_use]
 extern crate diesel;

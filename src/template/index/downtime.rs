@@ -1,6 +1,6 @@
-use crate::{time_formatter, settings};
-use chrono::{Utc, Duration, NaiveDateTime, Timelike};
 use crate::models::Status;
+use crate::{settings, time_formatter};
+use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Downtime {
@@ -94,9 +94,9 @@ pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime>
 #[cfg(test)]
 mod test {
     use crate::models::Status;
+    use crate::template::index::downtime::compute_downtime_periods;
     use chrono::{TimeZone, Utc};
     use std::ops::Sub;
-    use crate::template::index::downtime::compute_downtime_periods;
 
     #[actix_rt::test]
     async fn compute_simple_downtime() {
@@ -107,7 +107,7 @@ mod test {
             project: 0,
             time: 0,
         }])
-            .await;
+        .await;
 
         assert!(x.is_empty())
     }
@@ -137,7 +137,7 @@ mod test {
                 time: 10,
             },
         ])
-            .await;
+        .await;
 
         assert_eq!(x.first().unwrap().duration, "59 minutes");
         assert_eq!(x.len(), 1);
@@ -162,7 +162,7 @@ mod test {
                 time: 10,
             },
         ])
-            .await;
+        .await;
 
         assert_eq!(x.first().unwrap().duration, "23 hours");
         assert_eq!(x.len(), 1);
@@ -186,7 +186,7 @@ mod test {
                 time: 10,
             },
         ])
-            .await;
+        .await;
 
         assert_eq!(x.first().unwrap().duration, "24 hours");
         assert_eq!(x.len(), 1);
