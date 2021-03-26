@@ -12,3 +12,4 @@ pub mod template_history;
 pub mod template_incident_details;
 pub mod template_tooltip;
 pub mod template_uptime;
+pub mod template_admin_project_details;

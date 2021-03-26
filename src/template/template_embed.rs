@@ -2,7 +2,7 @@ use crate::data::project_repository::ProjectRepositoryData;
 use crate::data::status_repository::StatusRepositoryData;
 use crate::settings;
 use crate::template::index::status_day::StatusDay;
-use crate::template::index::template_index::{compute_downtime_periods, ProjectStatus};
+use crate::template::index::template_index::ProjectStatus;
 use actix_web::get;
 use actix_web::web::Path;
 use actix_web::{HttpResponse, Responder};
@@ -10,6 +10,7 @@ use askama::Template;
 use chrono::{Timelike, Utc};
 use std::convert::TryInto;
 use std::ops::Sub;
+use crate::template::index::downtime::compute_downtime_periods;
 
 #[derive(Template)]
 #[template(path = "embed.html")]

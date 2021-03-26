@@ -1,0 +1,25 @@
+{% extends "base_admin_template.html" %}
+
+{% block content_main %}
+<div class="container-md">
+    <nav aria-label="breadcrumb" class="mt-2">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{project.name}}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-row">
+        <h2 class="mr-auto">Details for {{project.name}}</h2>
+    </div>
+
+    <div class="border border-info bg-info bg-gradient w-25">
+        <p>Uptime</p>
+        <p>{{uptime_percentage}}%</p>
+    </div>
+
+    <h3>Uptime changes</h3>
+
+{% endblock %}
+
+{% block class_home_active%}active{% endblock %}

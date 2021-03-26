@@ -2,7 +2,11 @@
 
 {% block content_main %}
 <div class="container-md">
-
+    <nav aria-label="breadcrumb" class="mt-2">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+        </ol>
+    </nav>
 
     <div class="d-flex flex-row">
         <h2 class="mr-auto">Projects</h2>
@@ -30,6 +34,7 @@
                     <div class="form-group">
                         <a href="/embed/{{project.id}}">Embed URL</a>
                     </div>
+                    <a class="btn btn-primary" href="/admin/project/{{project.id}}">Details</a>
                 </div>
             </div>
         {% endfor %}

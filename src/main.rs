@@ -44,6 +44,7 @@ use actix_web::cookie::SameSite;
 use env_logger::Env;
 use std::env;
 use std::sync::Arc;
+use crate::template::template_admin_project_details::{get_admin_project_details, post_admin_project_details};
 
 #[macro_use]
 extern crate diesel;
@@ -118,6 +119,8 @@ async fn main() -> std::io::Result<()> {
             .service(get_embed)
             .service(get_admin_dashboard)
             .service(post_admin_dashboard)
+            .service(get_admin_project_details)
+            .service(post_admin_project_details)
             .service(get_admin_subscriptions)
             .service(post_admin_subscriptions)
             .service(post_email_subscribe)

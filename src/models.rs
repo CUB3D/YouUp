@@ -35,6 +35,10 @@ pub struct Status {
 }
 
 impl Status {
+    pub fn status_code(&self) -> Option<StatusCode> {
+        StatusCode::from_u16(self.status_code as u16).ok()
+    }
+
     pub(crate) fn is_success(&self) -> bool {
         StatusCode::from_u16(self.status_code as u16)
             .map(|s| s.is_success())
