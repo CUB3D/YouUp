@@ -13,8 +13,16 @@ pub fn get_db_connection() -> Database {
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-    let conn = MysqlConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url));
+    let conn;
+    loop {
+        match MysqlConnection::establish(&database_url) {
+            Ok(x) => {
+                conn = x;
+                break;
+            }
+            Err(_) => log::warn!("Error connecting to {}", database_url),
+        }
+    }
 
     embedded_migrations::run_with_output(&conn, &mut std::io::stdout())
         .expect("Unable to run migrations");

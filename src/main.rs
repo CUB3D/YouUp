@@ -36,7 +36,7 @@ use crate::template::template_feed_rss::get_rss_feed;
 use crate::template::template_history::get_incident_history;
 use crate::template::template_incident_details::get_incident_details;
 use crate::template::template_uptime::get_uptime;
-use crate::update_job::run_update_job;
+use crate::update_job::{process_pending_status_updates_job, run_update_job};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::cookie::SameSite;
 use env_logger::Env;
@@ -82,6 +82,7 @@ async fn main() -> std::io::Result<()> {
             db.clone(),
             Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>,
         ));
+        spawn(process_pending_status_updates_job(db.clone()));
     }
 
     let host = settings::get_host_domain();
