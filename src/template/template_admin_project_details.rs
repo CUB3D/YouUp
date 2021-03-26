@@ -1,8 +1,8 @@
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::data::status_repository::StatusRepositoryData;
-use crate::db::Database;
+
 use crate::models::Project;
-use crate::schema::projects::dsl::projects;
+
 use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
 use crate::template::template_admin_login::AdminLogin;
 use actix_identity::Identity;
