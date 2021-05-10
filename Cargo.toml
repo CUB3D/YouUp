@@ -29,6 +29,6 @@ tracing = { version = "0.1.22", features = ["log"] }
 tracing-futures = "0.2.4"
 uuid = "0.8.2"
 rss = { version = "1.10.0", features = ["builders"] }
-escaper = "0.1.0"
+escaper = "0.1.1"
 atom_syndication = { version = "0.9.1", features = ["builders"] }
 twilio = "1.0.0"
