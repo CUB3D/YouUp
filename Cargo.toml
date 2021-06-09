@@ -15,7 +15,7 @@ rand = "0.8.3"
 serde = { version = "1.0.125", features = ["derive"] }
 askama = "0.10.5"
 chrono = "0.4.19"
-diesel = { version = "1.4.4", features = ["r2d2", "mysql", "chrono"] }
+diesel = { version = "1.4.7", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
 log = "0.4.14"
