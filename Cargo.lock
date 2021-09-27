@@ -2756,9 +2756,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.1.1"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6714d663090b6b0acb0fa85841c6d66233d150cdb2602c8f9b8abb03370beb3f"
+checksum = "01cf844b23c6131f624accf65ce0e4e9956a8bb329400ea5bcc26ae3a5c20b0b"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
@@ -2771,21 +2771,6 @@ dependencies = [
  "pin-project-lite 0.2.6",
  "signal-hook-registry",
  "tokio-macros",
- "winapi 0.3.9",
-]
-
-[[package]]
-name = "tokio"
-version = "1.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01cf844b23c6131f624accf65ce0e4e9956a8bb329400ea5bcc26ae3a5c20b0b"
-dependencies = [
- "autocfg",
- "bytes 1.0.1",
- "libc",
- "memchr",
- "mio 0.7.9",
- "pin-project-lite 0.2.6",
  "winapi 0.3.9",
 ]
 
@@ -3313,7 +3298,7 @@ dependencies = [
  "reqwest",
  "rss",
  "serde",
- "tokio 1.1.1",
+ "tokio 1.10.0",
  "tracing",
  "tracing-futures",
  "twilio",
