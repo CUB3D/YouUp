@@ -1,9 +1,8 @@
 use actix_files::Files;
 use actix_rt::spawn;
 
-use actix_web::middleware::normalize::TrailingSlash;
-use actix_web::middleware::{Compress, Logger, NormalizePath};
-use actix_web::web::resource;
+use actix_web::middleware::{Compress, Logger, NormalizePath, TrailingSlash};
+use actix_web::web::{resource, Data};
 use actix_web::App;
 use actix_web::HttpServer;
 use dotenv::dotenv;
@@ -96,16 +95,22 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .data(db.clone())
-            .data(Box::new(db.clone()) as Box<dyn ProjectRepository>)
-            .data(Box::new(db.clone()) as Box<dyn IncidentRepository>)
-            .data(Box::new(db.clone()) as Box<dyn StatusRepository>)
-            .data(Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>)
-            .data(Box::new(db.clone()) as Box<dyn WebhookSubscriptionRepository>)
-            .data(PersistedSettings::new(db.clone()))
-            .data(mailer.clone())
-            .data(sms.clone())
-            .data(webhook.clone())
+            .app_data(Data::new(db.clone()))
+            .app_data(Data::new(Box::new(db.clone()) as Box<dyn ProjectRepository>))
+            .app_data(Data::new(
+                Box::new(db.clone()) as Box<dyn IncidentRepository>
+            ))
+            .app_data(Data::new(Box::new(db.clone()) as Box<dyn StatusRepository>))
+            .app_data(Data::new(
+                Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>
+            ))
+            .app_data(Data::new(
+                Box::new(db.clone()) as Box<dyn WebhookSubscriptionRepository>
+            ))
+            .app_data(Data::new(PersistedSettings::new(db.clone())))
+            .app_data(Data::new(mailer.clone()))
+            .app_data(Data::new(sms.clone()))
+            .app_data(Data::new(webhook.clone()))
             .service(Files::new("/static", "./static"))
             .service(resource("/").to(root))
             .service(get_uptime)

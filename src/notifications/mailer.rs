@@ -56,7 +56,7 @@ impl Mailer {
             let email = Message::builder()
                 .to(user.email.parse().unwrap())
                 .from(from.parse().unwrap())
-                .header(ContentType::html())
+                .header(ContentType::TEXT_HTML)
                 .subject(&title)
                 .body(message_body.to_string())
                 .unwrap();

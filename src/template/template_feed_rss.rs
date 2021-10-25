@@ -19,8 +19,7 @@ async fn rss_feed(incidents: IncidentRepositoryData) -> impl Responder {
             let guid = GuidBuilder::default()
                 .value(url.clone())
                 .permalink(true)
-                .build()
-                .unwrap();
+                .build();
 
             let description = status
                 .iter()
@@ -38,7 +37,6 @@ async fn rss_feed(incidents: IncidentRepositoryData) -> impl Responder {
                 //todo:  Can 2822 be used as a drop in replacement for 822?
                 .pub_date(Utc.from_utc_datetime(&incident.created).to_rfc2822())
                 .build()
-                .unwrap()
         })
         .collect::<Vec<_>>();
 
@@ -47,11 +45,10 @@ async fn rss_feed(incidents: IncidentRepositoryData) -> impl Responder {
         .link("test")
         .description("Incidents for 'test'")
         .items(items)
-        .build()
-        .unwrap();
+        .build();
 
     HttpResponse::Ok()
-        .header(http::header::CONTENT_TYPE, "application/rss+xml")
+        .append_header((http::header::CONTENT_TYPE, "application/rss+xml"))
         .body(channel.to_string())
 }
 

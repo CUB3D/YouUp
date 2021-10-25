@@ -39,7 +39,7 @@ async fn admin_incident_status_new(
 ) -> impl Responder {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/admin")
+            .append_header((http::header::LOCATION, "/admin"))
             .finish();
     }
 
@@ -68,7 +68,7 @@ pub async fn get_admin_incident_status_new(
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin Incidents New Status GET", request_id = %request_id);
 
-    admin_incident_status_new(path.0 .0, id, pool, settings)
+    admin_incident_status_new(path.into_inner().0, id, pool, settings)
         .instrument(span)
         .await
 }
@@ -94,13 +94,15 @@ pub async fn post_admin_incident_status_new(
         status_type
     );
 
+    let (incident,) = path.into_inner();
+
     incident_repo.add_status_update(NewIncidentStatusUpdate {
-        incident: path.0 .0,
+        incident,
         message: form_data.message.clone(),
         status_type: status_type.id,
     });
 
-    admin_incident_status_new(path.0 .0, id, pool, settings)
+    admin_incident_status_new(incident, id, pool, settings)
         .instrument(span)
         .await
 }

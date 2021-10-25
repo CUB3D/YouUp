@@ -30,7 +30,7 @@ async fn admin_dashboard(
 ) -> impl Responder {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/admin")
+            .append_header((http::header::LOCATION, "/admin"))
             .finish();
     }
 

@@ -53,7 +53,7 @@ pub async fn process_pending_status_updates_job(db: Database) {
             }
         }
 
-        actix_rt::time::delay_for(Duration::from_secs(90)).await;
+        actix_rt::time::sleep(Duration::from_secs(90)).await;
     }
 }
 
@@ -75,8 +75,9 @@ pub async fn run_update_job(
             .expect("Unable to load projects");
 
         for domain in &projects_list {
-            // Check if domain is up, store in db and wait
+            tracing::info!("Checking {}", domain.name);
 
+            // Check if domain is up, store in db and wait
             let req = c.get(&domain.url).send();
             let req_start_time = Instant::now();
             let response = req.await;
@@ -142,6 +143,6 @@ pub async fn run_update_job(
             }
         }
 
-        actix_rt::time::delay_for(Duration::from_secs(90)).await;
+        actix_rt::time::sleep(Duration::from_secs(90)).await;
     }
 }

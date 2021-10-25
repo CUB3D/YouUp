@@ -31,7 +31,7 @@ pub async fn get_admin_login(id: Identity, settings: Data<PersistedSettings>) ->
     if id.is_logged_in() {
         println!("Already logged in, sending to dashboard");
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/admin/dashboard")
+            .append_header((http::header::LOCATION, "/admin/dashboard"))
             .finish();
     }
 
@@ -58,11 +58,11 @@ pub async fn post_admin_login(id: Identity, form: Form<LoginRequest>) -> impl Re
         id.remember("admin".to_owned());
 
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/admin/dashboard")
+            .append_header((http::header::LOCATION, "/admin/dashboard"))
             .finish();
     }
 
     HttpResponse::PermanentRedirect()
-        .header(http::header::LOCATION, "/admin")
+        .append_header((http::header::LOCATION, "/admin"))
         .finish()
 }

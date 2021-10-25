@@ -26,16 +26,17 @@ pub async fn get_incident_details(
     projects: ProjectRepositoryData,
 ) -> impl Responder {
     let request_id = Uuid::new_v4();
-    let span = tracing::info_span!("Incident", request_id = %request_id, incident_id = id.0.0);
+    let span =
+        tracing::info_span!("Incident", request_id = %request_id, incident_id = id.as_ref().0);
     let _guard = span.enter();
 
-    let incident = incidents.get_incident_by_id(id.0 .0);
+    let incident = incidents.get_incident_by_id(id.as_ref().0);
     //TODO: can we do this with a join?
     let project = projects.get_project_by_id(incident.project);
 
     if project.is_none() {
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/")
+            .append_header((http::header::LOCATION, "/"))
             .finish();
     }
 
@@ -45,7 +46,7 @@ pub async fn get_incident_details(
     tracing::debug!(
         "Got {} status updates for incident {}",
         status_updates.len(),
-        id.0 .0
+        id.as_ref().0
     );
 
     let template = IncidentDetailsTemplate {

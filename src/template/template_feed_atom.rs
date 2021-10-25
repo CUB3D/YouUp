@@ -31,29 +31,26 @@ async fn atom_feed(incidents: IncidentRepositoryData) -> impl Responder {
                     ContentBuilder::default()
                         .value(description)
                         .content_type(Some("html".to_string()))
-                        .build()
-                        .unwrap(),
+                        .build(),
                 )
-                .links(vec![LinkBuilder::default().href(url).build().unwrap()])
+                .links(vec![LinkBuilder::default().href(url).build()])
                 .id(Uuid::new_v4().to_string())
                 .published(Utc.fix().from_local_datetime(&incident.created).unwrap())
                 .build()
-                .unwrap()
         })
         .collect::<Vec<_>>();
 
     let feed = FeedBuilder::default()
         .id(Uuid::new_v4().to_string())
         .title("YouUp incidents for 'test'")
-        .subtitle(Some("Incidents for 'test'".to_string()))
+        .subtitle(Some(atom_syndication::Text::plain("Incidents for 'test'")))
         .updated(Utc::now().with_timezone(&Utc))
-        .links(vec![LinkBuilder::default().href("test").build().unwrap()])
+        .links(vec![LinkBuilder::default().href("test").build()])
         .entries(entries)
-        .build()
-        .unwrap();
+        .build();
 
     HttpResponse::Ok()
-        .header(http::header::CONTENT_TYPE, "application/atom+xml")
+        .append_header((http::header::CONTENT_TYPE, "application/atom+xml"))
         .body(feed.to_string())
 }
 

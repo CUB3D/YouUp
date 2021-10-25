@@ -43,7 +43,7 @@ async fn admin_subscription(
 
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/admin")
+            .append_header((http::header::LOCATION, "/admin"))
             .finish();
     }
 

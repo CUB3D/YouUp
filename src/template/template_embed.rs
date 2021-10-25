@@ -27,7 +27,7 @@ pub async fn get_embed(
     projects: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
 ) -> impl Responder {
-    if let Some(proj) = projects.get_project_by_id(id.0 .0) {
+    if let Some(proj) = projects.get_project_by_id(id.as_ref().0) {
         let status_list: Vec<_> = status_repo.get_status_last_30_days();
         let history_size = settings::get_history_size();
 
@@ -80,7 +80,7 @@ pub async fn get_embed(
         HttpResponse::Ok().body(template)
     } else {
         HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/")
+            .append_header((http::header::LOCATION, "/"))
             .finish()
     }
 }
