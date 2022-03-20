@@ -84,9 +84,9 @@ dependencies = [
 
 [[package]]
 name = "actix-identity"
-version = "0.4.0-beta.3"
+version = "0.4.0-beta.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bfff0a087e890d3b9bed74951a554dc709c3ac92f855b07a6767d42bca9c7c2"
+checksum = "7858dff821616d585dbc6ca0d64a3d571c8e567ca0a19f77342f9b8bb29a04be"
 dependencies = [
  "actix-service",
  "actix-web",
