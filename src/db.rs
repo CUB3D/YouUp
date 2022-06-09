@@ -2,11 +2,13 @@ use diesel::r2d2::ConnectionManager;
 use diesel::r2d2::Pool;
 use diesel::{Connection, MysqlConnection};
 use std::env;
+use tracing::warn;
 
 embed_migrations!();
 
 pub type Database = Pool<ConnectionManager<MysqlConnection>>;
 
+#[tracing::instrument]
 pub fn get_db_connection() -> Database {
     let span = tracing::info_span!("Connecting to the database");
     let _span_guard = span.enter();
@@ -20,7 +22,7 @@ pub fn get_db_connection() -> Database {
                 conn = x;
                 break;
             }
-            Err(_) => log::warn!("Error connecting to {}", database_url),
+            Err(_) => warn!("Error connecting to {}", database_url),
         }
     }
 

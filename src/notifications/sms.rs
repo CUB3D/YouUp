@@ -1,3 +1,4 @@
+use std::fmt;
 use crate::data::sms_subscription_repository::SmsSubscriberRepository;
 use crate::settings;
 use twilio::{Client, OutboundMessage};
@@ -5,6 +6,12 @@ use twilio::{Client, OutboundMessage};
 pub struct SMSNotifier {
     client: Client,
 }
+impl fmt::Debug for SMSNotifier {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "SMSNotifier ( client: ... )")
+    }
+}
+
 
 impl Default for SMSNotifier {
     fn default() -> Self {

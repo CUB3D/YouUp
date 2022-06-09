@@ -6,8 +6,9 @@ use diesel::{ExpressionMethods, QueryDsl};
 use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
+use tracing::{info, warn};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Mailer {
     creds: Credentials,
 }
@@ -32,9 +33,9 @@ impl Mailer {
         let result = mailer.send(&email);
 
         if result.is_ok() {
-            log::info!("Email sent");
+            info!("Email sent");
         } else {
-            log::warn!("Could not send email: {:?}", result);
+            warn!("Could not send email: {:?}", result);
         }
     }
 

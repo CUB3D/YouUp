@@ -47,7 +47,7 @@ impl Status {
     }
 }
 
-#[derive(Insertable, Clone)]
+#[derive(Insertable, Clone, Debug)]
 #[table_name = "status"]
 pub struct NewStatus {
     pub project: i32,

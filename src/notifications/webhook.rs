@@ -2,6 +2,7 @@ use crate::data::webhook_subscription_repository::WebhookSubscriberRepository;
 use reqwest::Client;
 use serde::Serialize;
 
+#[derive(Debug)]
 pub struct WebhookNotifier {
     client: Client,
 }

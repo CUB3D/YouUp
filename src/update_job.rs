@@ -10,7 +10,6 @@ use crate::db::Database;
 use crate::notifications::mailer::Mailer;
 use crate::notifications::sms::SMSNotifier;
 use crate::notifications::webhook::{WebhookNotifier, WebhookPayload};
-use crate::schema::projects::dsl::*;
 use crate::schema::status as stat;
 use chrono::Utc;
 use std::ops::{Deref, DerefMut};
@@ -22,6 +21,7 @@ lazy_static! {
     static ref PENDING_STATUS_UPDATES: Mutex<Vec<NewStatus>> = Mutex::new(Vec::new());
 }
 
+#[tracing::instrument(skip(db))]
 pub fn submit_status(db: Database, status: NewStatus) {
     match diesel::insert_into(stat::table)
         .values(status.clone())
@@ -36,6 +36,7 @@ pub fn submit_status(db: Database, status: NewStatus) {
     }
 }
 
+#[tracing::instrument(skip(db))]
 pub async fn process_pending_status_updates_job(db: Database) {
     let _span = tracing::info_span!("Process pending updates job");
 
@@ -57,6 +58,7 @@ pub async fn process_pending_status_updates_job(db: Database) {
     }
 }
 
+#[tracing::instrument(skip(db, webhook_subscription_repo, sms_subscription_repo))]
 pub async fn run_update_job(
     mailer: Arc<Mailer>,
     sms: Arc<SMSNotifier>,
@@ -70,7 +72,7 @@ pub async fn run_update_job(
     let c = Client::builder().build().unwrap();
 
     loop {
-        let projects_list = projects
+        let projects_list = crate::schema::projects::dsl::projects
             .load::<Project>(&db.get().unwrap())
             .expect("Unable to load projects");
 

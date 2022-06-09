@@ -40,9 +40,12 @@ use crate::template::template_uptime::get_uptime;
 use crate::update_job::{process_pending_status_updates_job, run_update_job};
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::cookie::SameSite;
-use env_logger::Env;
 use std::env;
 use std::sync::Arc;
+use sentry_tracing::EventFilter;
+use tracing::Level;
+use tracing_subscriber::layer::SubscriberExt;
+use tracing_subscriber::util::SubscriberInitExt;
 
 #[macro_use]
 extern crate diesel;
@@ -66,11 +69,29 @@ pub mod update_job;
 
 //TODO: REST API
 //TODO: twitter
+//TODO: make sentry optional
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+
+    let _guard = sentry::init(("https://c2d3ab1d150243ce9a828d92d5a77452@o289707.ingest.sentry.io/6486846", sentry::ClientOptions {
+        // Set this a to lower value in production
+        traces_sample_rate: 1.0,
+        release: sentry::release_name!(),
+        ..sentry::ClientOptions::default()
+    }));
+
+    let sentry_layer = sentry_tracing::layer().event_filter(|md| match md.level() {
+        &tracing::Level::ERROR => EventFilter::Event,
+        _ => EventFilter::Ignore,
+    });
+
+    tracing_subscriber::FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish()
+        .with(sentry_layer)
+        .init();
 
     let db = db::get_db_connection();
     let mailer = Arc::new(Mailer::default());
@@ -135,7 +156,6 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(Compress::default())
             .wrap(NormalizePath::new(TrailingSlash::MergeOnly))
-            // .wrap(NormalizePath::default())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&settings::private_key())
                     .name("you-up-auth")
