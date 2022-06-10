@@ -24,9 +24,16 @@
                         <label class="custom-control-label" for="{{project.id}}_enabled">Show on homepage</label>
                     </div>
                     <div class="form-group">
+                      <p>created: {{ project.created }}</p>
+                    </div>
+                    <div class="form-group">
                         <label for="{{project.id}}_description">Description</label>
                         <input type="text" id="{{project.id}}_description" value='{{project.formatted_description()}}'>
                     </div>
+                  <div class="form-group">
+                    <label for="{{project.id}}_url">URL</label>
+                    <input type="text" id="{{project.id}}_url" value='{{project.url}}'>
+                  </div>
                     <div class="form-group">
                         <a href="/embed/{{project.id}}">Embed URL</a>
                     </div>
