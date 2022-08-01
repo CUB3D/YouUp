@@ -25,7 +25,7 @@ lettre = { version = "0.10.0-rc.7", features = ["smtp-transport"] }
 lazy_static = "1.4.0"
 tracing = "0.1.35"
 tracing-futures = "0.2.5"
-tracing-subscriber = "0.3.11"
+tracing-subscriber = "0.3.15"
 sentry-tracing = "0.26.0"
 sentry = "0.26.0"
 uuid = { version = "1.1.1", features = ["v4"] }
