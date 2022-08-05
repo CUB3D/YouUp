@@ -14,7 +14,7 @@ actix-identity = "0.4.0"
 rand = "0.8.5"
 serde = { version = "1.0.137", features = ["derive"] }
 askama = "0.11.1"
-chrono = "0.4.19"
+chrono = "0.4.20"
 diesel = { version = "1.4.8", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
