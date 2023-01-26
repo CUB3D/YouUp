@@ -2125,7 +2125,7 @@ dependencies = [
  "reqwest",
  "sentry-backtrace",
  "sentry-contexts",
- "sentry-core",
+ "sentry-core 0.26.0",
  "sentry-panic",
  "tokio 1.19.2",
 ]
@@ -2139,7 +2139,7 @@ dependencies = [
  "backtrace",
  "lazy_static",
  "regex",
- "sentry-core",
+ "sentry-core 0.26.0",
 ]
 
 [[package]]
@@ -2151,7 +2151,7 @@ dependencies = [
  "hostname",
  "libc",
  "rustc_version",
- "sentry-core",
+ "sentry-core 0.26.0",
  "uname",
 ]
 
@@ -2163,7 +2163,20 @@ checksum = "6c9f509d3959ed4dbbd80ca42572caad682aaa1cdd92c719e0815d0e87f82c96"
 dependencies = [
  "lazy_static",
  "rand 0.8.5",
- "sentry-types",
+ "sentry-types 0.26.0",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "sentry-core"
+version = "0.29.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc43eb7e4e3a444151a0fe8a0e9ce60eabd905dae33d66e257fa26f1b509c1bd"
+dependencies = [
+ "once_cell",
+ "rand 0.8.5",
+ "sentry-types 0.29.2",
  "serde",
  "serde_json",
 ]
@@ -2175,16 +2188,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8b442769cc34115f64393f7bfe4f863c3c38749e0c0b9613a7ae25b37c7ba53"
 dependencies = [
  "sentry-backtrace",
- "sentry-core",
+ "sentry-core 0.26.0",
 ]
 
 [[package]]
 name = "sentry-tracing"
-version = "0.26.0"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4e2796e40502893ed0d04646e507f91e74f1cbf09e370d42bb1cdbcaeeca9bb"
+checksum = "46ebf58c2bd1d97152c316ff170ee736c59a16967738aeb8ed0d79b80e3713ae"
 dependencies = [
- "sentry-core",
+ "sentry-core 0.29.2",
  "tracing-core",
  "tracing-subscriber",
 ]
@@ -2194,6 +2207,23 @@ name = "sentry-types"
 version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "254b600e93e9ef00a48382c9f1e86d27884bd9a5489efa4eb9210c20c72e88a6"
+dependencies = [
+ "debugid",
+ "getrandom",
+ "hex",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "time 0.3.9",
+ "url 2.2.1",
+ "uuid",
+]
+
+[[package]]
+name = "sentry-types"
+version = "0.29.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f63708ec450b6bdcb657af760c447416d69c38ce421f34e5e2e9ce8118410bc7"
 dependencies = [
  "debugid",
  "getrandom",
