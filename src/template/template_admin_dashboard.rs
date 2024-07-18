@@ -24,7 +24,7 @@ pub struct AdminDashboardTemplate {
 pub struct ProjectUpdate {}
 
 async fn admin_dashboard(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
 ) -> impl Responder {
@@ -50,7 +50,7 @@ async fn admin_dashboard(
 
 #[get("/admin/dashboard")]
 pub async fn get_admin_dashboard(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
 ) -> impl Responder {
@@ -59,7 +59,7 @@ pub async fn get_admin_dashboard(
 
 #[post("/admin/dashboard")]
 pub async fn post_admin_dashboard(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
     _updates: Option<Form<ProjectUpdate>>,

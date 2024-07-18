@@ -141,7 +141,7 @@ pub async fn root(
     settings: Data<PersistedSettings>,
     project_repo: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
-    identity: Identity,
+    identity: Option<Identity>,
 ) -> impl Responder {
     let projects_list = project_repo.get_all_projects();
 

@@ -33,7 +33,7 @@ pub struct StatusUpdate {
 
 async fn admin_incident_status_new(
     incident_id: i32,
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
 ) -> impl Responder {
@@ -61,7 +61,7 @@ async fn admin_incident_status_new(
 #[get("/admin/incident/{id}/status/new")]
 pub async fn get_admin_incident_status_new(
     path: Path<(i32,)>,
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
 ) -> impl Responder {
@@ -76,7 +76,7 @@ pub async fn get_admin_incident_status_new(
 #[post("/admin/incident/{id}/status/new")]
 pub async fn post_admin_incident_status_new(
     path: Path<(i32,)>,
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     incident_repo: IncidentRepositoryData,
     settings: Data<PersistedSettings>,

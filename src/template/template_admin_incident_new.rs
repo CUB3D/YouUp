@@ -35,7 +35,7 @@ pub struct ProjectUpdate {
 }
 
 async fn admin_incidents_new(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
 ) -> impl Responder {
@@ -68,7 +68,7 @@ async fn admin_incidents_new(
 
 #[get("/admin/incidents/new")]
 pub async fn get_admin_incidents_new(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
 ) -> impl Responder {
@@ -82,7 +82,7 @@ pub async fn get_admin_incidents_new(
 
 #[post("/admin/incidents/new")]
 pub async fn post_admin_incidents_new(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     project_repo: ProjectRepositoryData,
     incident_repo: IncidentRepositoryData,

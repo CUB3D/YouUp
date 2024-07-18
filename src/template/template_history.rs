@@ -34,7 +34,7 @@ pub async fn get_incident_history(
     projects_repo: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
     settings: Data<PersistedSettings>,
-    identity: Identity,
+    identity: Option<Identity>,
 ) -> impl Responder {
     let projects = projects_repo.get_all_projects();
     let status_list = status_repo.get_status_last_90_days();

@@ -47,9 +47,9 @@ use sentry_tracing::EventFilter;
 use std::env;
 use std::sync::Arc;
 use tracing::level_filters::LevelFilter;
-use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::EnvFilter;
 
 #[macro_use]
 extern crate diesel;

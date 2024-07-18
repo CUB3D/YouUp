@@ -22,7 +22,7 @@ pub struct AdminSubscriptionTemplate {
 pub struct ProjectUpdate {}
 
 async fn admin_incidents(
-    id: Identity,
+    id: Option<Identity>,
     settings: Data<PersistedSettings>,
     incident_repo: IncidentRepositoryData,
 ) -> impl Responder {
@@ -50,7 +50,7 @@ async fn admin_incidents(
 
 #[get("/admin/incidents")]
 pub async fn get_admin_incidents(
-    id: Identity,
+    id: Option<Identity>,
     settings: Data<PersistedSettings>,
     incident_repo: IncidentRepositoryData,
 ) -> impl Responder {

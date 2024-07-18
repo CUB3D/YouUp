@@ -11,9 +11,12 @@ pub trait AdminLogin {
     fn is_logged_in(&self) -> bool;
 }
 
-impl AdminLogin for Identity {
+impl AdminLogin for Option<Identity> {
     fn is_logged_in(&self) -> bool {
-        matches!(self.id(), Ok(x) if x == "admin")
+        match self {
+            Some(id) => matches!(id.id(), Ok(x) if x == "admin"),
+            None => false,
+        }
     }
 }
 
@@ -25,7 +28,10 @@ pub struct LoginTemplate {
 }
 
 #[get("/admin")]
-pub async fn get_admin_login(id: Identity, settings: Data<PersistedSettings>) -> impl Responder {
+pub async fn get_admin_login(
+    id: Option<Identity>,
+    settings: Data<PersistedSettings>,
+) -> impl Responder {
     crate::settings::admin_password();
 
     if id.is_logged_in() {

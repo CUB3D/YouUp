@@ -31,7 +31,7 @@ pub struct AdminSubscriptionTemplate {
 pub struct ProjectUpdate {}
 
 async fn admin_subscription(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
     sms_subscriptions_repo: SmsSubscriberRepositoryData,
@@ -66,7 +66,7 @@ async fn admin_subscription(
 
 #[get("/admin/subscriptions")]
 pub async fn get_admin_subscriptions(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
     sms_subscriptions_repo: SmsSubscriberRepositoryData,
@@ -85,7 +85,7 @@ pub async fn get_admin_subscriptions(
 //TODO: is this needed
 #[post("/admin/subscriptions")]
 pub async fn post_admin_subscriptions(
-    id: Identity,
+    id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
     _updates: Option<Form<ProjectUpdate>>,
