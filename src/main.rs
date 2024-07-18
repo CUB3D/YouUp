@@ -46,7 +46,8 @@ use actix_web::cookie::{Key, SameSite};
 use sentry_tracing::EventFilter;
 use std::env;
 use std::sync::Arc;
-use tracing::Level;
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -81,7 +82,7 @@ async fn main() -> std::io::Result<()> {
     let _guard = sentry::init((
         "https://c2d3ab1d150243ce9a828d92d5a77452@o289707.ingest.sentry.io/6486846",
         sentry::ClientOptions {
-            // Set this a to lower value in production
+            // Set this to a lower value in production
             traces_sample_rate: 1.0,
             release: sentry::release_name!(),
             ..sentry::ClientOptions::default()
@@ -93,8 +94,12 @@ async fn main() -> std::io::Result<()> {
         _ => EventFilter::Ignore,
     });
 
-    tracing_subscriber::FmtSubscriber::builder()
-        .with_max_level(Level::INFO)
+    tracing_subscriber::fmt::fmt()
+        .with_env_filter(
+            EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .from_env_lossy(),
+        )
         .finish()
         .with(sentry_layer)
         .init();
@@ -161,7 +166,7 @@ async fn main() -> std::io::Result<()> {
             .service(post_admin_incident_status_new)
             .wrap(Logger::default())
             .wrap(Compress::default())
-            .wrap(NormalizePath::new(TrailingSlash::MergeOnly))
+            .wrap(NormalizePath::new(TrailingSlash::Trim))
             .wrap(IdentityMiddleware::default())
             // The identity system is built on top of sessions. You must install the session
             // middleware to leverage `actix-identity`. The session middleware must be mounted
