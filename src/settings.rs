@@ -113,11 +113,8 @@ impl PersistedSettings {
         use crate::schema::settings;
         let setting: Vec<Setting> = settings::table
             .filter(settings::dsl::name.eq(name))
-            .load::<Setting>(&self.db.get().unwrap())
+            .load::<Setting>(&mut self.db.get().unwrap())
             .unwrap();
-        setting
-            .first()
-            .map(|f| f.value.clone())
-            .unwrap_or_else(|| "".to_string())
+        setting.first().map(|f| f.value.clone()).unwrap_or_default()
     }
 }

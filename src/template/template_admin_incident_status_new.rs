@@ -39,12 +39,12 @@ async fn admin_incident_status_new(
 ) -> impl Responder {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .append_header((http::header::LOCATION, "/admin"))
+            .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
 
     let status_types = incident_status_type
-        .load::<IncidentStatusType>(&pool.get().unwrap())
+        .load::<IncidentStatusType>(&mut pool.get().unwrap())
         .expect("Unable to load incident status types");
 
     let template = AdminNewIncidentStatusTemplate {

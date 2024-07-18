@@ -80,7 +80,7 @@ pub async fn get_embed(
         HttpResponse::Ok().body(template)
     } else {
         HttpResponse::PermanentRedirect()
-            .append_header((http::header::LOCATION, "/"))
+            .append_header((http::header::LOCATION.as_str(), "/"))
             .finish()
     }
 }

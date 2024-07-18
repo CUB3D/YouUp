@@ -43,12 +43,12 @@ async fn admin_subscription(
 
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .append_header((http::header::LOCATION, "/admin"))
+            .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
 
     let subscriptions = email_subscriptions
-        .load::<EmailSubscription>(&pool.get().unwrap())
+        .load::<EmailSubscription>(&mut pool.get().unwrap())
         .expect("Unable to load subscriptions");
 
     let template = AdminSubscriptionTemplate {

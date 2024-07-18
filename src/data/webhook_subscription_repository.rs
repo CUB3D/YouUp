@@ -16,13 +16,13 @@ impl WebhookSubscriptionRepository for Database {
     fn get_all_enabled_subscribers(&self) -> Vec<WebhookSubscription> {
         webhook_subscriptions::table
             .filter(webhook_subscriptions::enabled.eq(true))
-            .load::<WebhookSubscription>(&self.get().unwrap())
+            .load::<WebhookSubscription>(&mut self.get().unwrap())
             .expect("Unable to load webhook subscribers")
     }
 
     fn get_all(&self) -> Vec<WebhookSubscription> {
         webhook_subscriptions::table
-            .load::<WebhookSubscription>(&self.get().unwrap())
+            .load::<WebhookSubscription>(&mut self.get().unwrap())
             .expect("Unable to load webhook subscribers")
     }
 }

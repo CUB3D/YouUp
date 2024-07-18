@@ -21,7 +21,7 @@ pub struct Project {
 
 impl Project {
     pub fn formatted_description(&self) -> String {
-        self.description.clone().unwrap_or_else(|| "".to_string())
+        self.description.clone().unwrap_or_default()
     }
 }
 
@@ -48,7 +48,7 @@ impl Status {
 }
 
 #[derive(Insertable, Clone, Debug)]
-#[table_name = "status"]
+#[diesel(table_name = status)]
 pub struct NewStatus {
     pub project: i32,
     pub time: i32,
@@ -56,7 +56,7 @@ pub struct NewStatus {
 }
 
 #[derive(Queryable, Identifiable, Clone)]
-#[table_name = "incidents"]
+#[diesel(table_name = incidents)]
 pub struct Incidents {
     pub id: i32,
     pub created: chrono::NaiveDateTime,
@@ -71,13 +71,13 @@ impl Incidents {
 }
 
 #[derive(Insertable)]
-#[table_name = "incidents"]
+#[diesel(table_name = incidents)]
 pub struct NewIncident {
     pub project: i32,
 }
 
 #[derive(Identifiable, Queryable, Clone, Debug)]
-#[table_name = "incident_status_type"]
+#[diesel(table_name = incident_status_type)]
 pub struct IncidentStatusType {
     pub id: i32,
     pub created: chrono::NaiveDateTime,
@@ -86,8 +86,8 @@ pub struct IncidentStatusType {
 }
 
 #[derive(Identifiable, Queryable, Clone, Associations)]
-#[belongs_to(Incidents, foreign_key = "incident")]
-#[table_name = "incident_status_update"]
+#[diesel(belongs_to(Incidents, foreign_key = incident))]
+#[diesel(table_name = incident_status_update)]
 pub struct IncidentStatusUpdate {
     pub id: i32,
     pub created: chrono::NaiveDateTime,
@@ -104,7 +104,7 @@ impl IncidentStatusUpdate {
 }
 
 #[derive(Insertable)]
-#[table_name = "incident_status_update"]
+#[diesel(table_name = incident_status_update)]
 pub struct NewIncidentStatusUpdate {
     pub status_type: i32,
     pub message: String,
@@ -128,7 +128,7 @@ pub struct EmailSubscription {
 }
 
 #[derive(Insertable)]
-#[table_name = "email_subscriptions"]
+#[diesel(table_name = email_subscriptions)]
 pub struct NewEmailSubscription {
     pub email: String,
 }

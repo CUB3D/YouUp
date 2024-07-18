@@ -32,7 +32,7 @@ async fn admin_incidents(
 
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .append_header((http::header::LOCATION, "/admin"))
+            .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
 

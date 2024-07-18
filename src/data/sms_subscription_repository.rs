@@ -16,13 +16,13 @@ impl SmsSubscriptionRepository for Database {
     fn get_all_confirmed_subscribers(&self) -> Vec<SmsSubscription> {
         sms_subscriptions::table
             .filter(sms_subscriptions::confirmed.eq(true))
-            .load::<SmsSubscription>(&self.get().unwrap())
+            .load::<SmsSubscription>(&mut self.get().unwrap())
             .expect("Unable to load sms subscribers")
     }
 
     fn get_all(&self) -> Vec<SmsSubscription> {
         sms_subscriptions::table
-            .load::<SmsSubscription>(&self.get().unwrap())
+            .load::<SmsSubscription>(&mut self.get().unwrap())
             .expect("Unable to load sms subscribers")
     }
 }

@@ -48,7 +48,7 @@ async fn rss_feed(incidents: IncidentRepositoryData) -> impl Responder {
         .build();
 
     HttpResponse::Ok()
-        .append_header((http::header::CONTENT_TYPE, "application/rss+xml"))
+        .append_header((http::header::CONTENT_TYPE.as_str(), "application/rss+xml"))
         .body(channel.to_string())
 }
 

@@ -50,7 +50,7 @@ async fn atom_feed(incidents: IncidentRepositoryData) -> impl Responder {
         .build();
 
     HttpResponse::Ok()
-        .append_header((http::header::CONTENT_TYPE, "application/atom+xml"))
+        .append_header((http::header::CONTENT_TYPE.as_str(), "application/atom+xml"))
         .body(feed.to_string())
 }
 

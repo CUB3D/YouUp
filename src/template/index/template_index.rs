@@ -16,6 +16,7 @@ use actix_web::{HttpResponse, Responder};
 use askama::Template;
 use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::dsl::sql;
+use diesel::sql_types::Bool;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use std::convert::TryInto;
 use std::ops::Sub;
@@ -49,108 +50,6 @@ pub struct ProjectStatus {
     pub project: Project,
     pub days: Vec<StatusDay>,
     pub today: StatusDay,
-}
-
-#[cfg(test)]
-mod test {
-    use crate::models::Status;
-    use crate::template::index::template_index::compute_downtime_periods;
-    use chrono::{TimeZone, Utc};
-    use std::ops::Sub;
-
-    #[actix_rt::test]
-    async fn compute_simple_downtime() {
-        let x = compute_downtime_periods(&[Status {
-            created: Utc::now().naive_utc(),
-            status_code: 200,
-            id: 0,
-            project: 0,
-            time: 0,
-        }])
-        .await;
-
-        assert!(x.is_empty())
-    }
-
-    #[actix_rt::test]
-    async fn compute_downtime() {
-        let x = compute_downtime_periods(&[
-            Status {
-                created: Utc::now().naive_utc(),
-                status_code: 200,
-                id: 3,
-                project: 0,
-                time: 10,
-            },
-            Status {
-                created: Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
-                status_code: 503,
-                id: 2,
-                project: 0,
-                time: 10,
-            },
-            Status {
-                created: Utc::now().naive_utc().sub(chrono::Duration::hours(2)),
-                status_code: 200,
-                id: 1,
-                project: 0,
-                time: 10,
-            },
-        ])
-        .await;
-
-        assert_eq!(x.first().unwrap().duration, "59 minutes");
-        assert_eq!(x.len(), 1);
-    }
-
-    #[actix_rt::test]
-    async fn compute_downtime_end_of_day() {
-        let x = compute_downtime_periods(&[
-            Status {
-                created: Utc.ymd(2020, 9, 25).and_hms(23, 0, 0).naive_utc(),
-                // Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
-                status_code: 200,
-                id: 2,
-                project: 0,
-                time: 10,
-            },
-            Status {
-                created: Utc.ymd(2020, 9, 25).and_hms(1, 0, 0).naive_utc(),
-                status_code: 404,
-                id: 1,
-                project: 0,
-                time: 10,
-            },
-        ])
-        .await;
-
-        assert_eq!(x.first().unwrap().duration, "23 hours");
-        assert_eq!(x.len(), 1);
-    }
-
-    #[actix_rt::test]
-    async fn compute_downtime_never_up() {
-        let x = compute_downtime_periods(&[
-            Status {
-                created: Utc.ymd(2020, 9, 25).and_hms(0, 0, 0).naive_utc(),
-                status_code: 404,
-                id: 1,
-                project: 0,
-                time: 10,
-            },
-            Status {
-                created: Utc.ymd(2020, 9, 25).and_hms(12, 0, 0).naive_utc(),
-                status_code: 404,
-                id: 2,
-                project: 0,
-                time: 10,
-            },
-        ])
-        .await;
-
-        assert_eq!(x.first().unwrap().duration, "24 hours");
-        assert_eq!(x.len(), 1);
-    }
 }
 
 pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime> {
@@ -296,15 +195,15 @@ pub async fn root(
     let mut incident_days = Vec::with_capacity(10);
 
     let all_incidents: Vec<_> = incidents
-        .filter(sql("created > DATE_SUB(NOW(), INTERVAL 10 day)"))
-        .load::<Incidents>(&pool.get().unwrap())
+        .filter(sql::<Bool>("created > DATE_SUB(NOW(), INTERVAL 10 day)"))
+        .load::<Incidents>(&mut pool.get().unwrap())
         .unwrap();
 
     let incident_days_status = IncidentStatusUpdate::belonging_to(&all_incidents)
         .order(incident_status_update::dsl::created.desc())
         .inner_join(incident_status_type::table)
         .filter(incident_status_type::dsl::id.eq(incident_status_update::dsl::id))
-        .load(&pool.get().unwrap())
+        .load(&mut pool.get().unwrap())
         .unwrap()
         .grouped_by(&all_incidents);
     let incidents_and_status = all_incidents
@@ -340,4 +239,118 @@ pub async fn root(
     .expect("Unable to render template");
 
     HttpResponse::Ok().body(template)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::models::Status;
+    use crate::template::index::template_index::compute_downtime_periods;
+    use chrono::{TimeZone, Utc};
+    use std::ops::Sub;
+
+    #[actix_rt::test]
+    async fn compute_simple_downtime() {
+        let x = compute_downtime_periods(&[Status {
+            created: Utc::now().naive_utc(),
+            status_code: 200,
+            id: 0,
+            project: 0,
+            time: 0,
+        }])
+        .await;
+
+        assert!(x.is_empty())
+    }
+
+    #[actix_rt::test]
+    async fn compute_downtime() {
+        let x = compute_downtime_periods(&[
+            Status {
+                created: Utc::now().naive_utc(),
+                status_code: 200,
+                id: 3,
+                project: 0,
+                time: 10,
+            },
+            Status {
+                created: Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
+                status_code: 503,
+                id: 2,
+                project: 0,
+                time: 10,
+            },
+            Status {
+                created: Utc::now().naive_utc().sub(chrono::Duration::hours(2)),
+                status_code: 200,
+                id: 1,
+                project: 0,
+                time: 10,
+            },
+        ])
+        .await;
+
+        assert_eq!(x.first().unwrap().duration, "59 minutes");
+        assert_eq!(x.len(), 1);
+    }
+
+    #[actix_rt::test]
+    async fn compute_downtime_end_of_day() {
+        let x = compute_downtime_periods(&[
+            Status {
+                created: Utc
+                    .with_ymd_and_hms(2020, 9, 25, 23, 0, 0)
+                    .unwrap()
+                    .naive_utc(),
+                // Utc::now().naive_utc().sub(chrono::Duration::hours(1)),
+                status_code: 200,
+                id: 2,
+                project: 0,
+                time: 10,
+            },
+            Status {
+                created: Utc
+                    .with_ymd_and_hms(2020, 9, 25, 1, 0, 0)
+                    .unwrap()
+                    .naive_utc(),
+                status_code: 404,
+                id: 1,
+                project: 0,
+                time: 10,
+            },
+        ])
+        .await;
+
+        assert_eq!(x.first().unwrap().duration, "23 hours");
+        assert_eq!(x.len(), 1);
+    }
+
+    #[actix_rt::test]
+    async fn compute_downtime_never_up() {
+        let x = compute_downtime_periods(&[
+            Status {
+                created: Utc
+                    .with_ymd_and_hms(2020, 9, 25, 0, 0, 0)
+                    .unwrap()
+                    .naive_utc(),
+                status_code: 404,
+                id: 1,
+                project: 0,
+                time: 10,
+            },
+            Status {
+                created: Utc
+                    .with_ymd_and_hms(2020, 9, 25, 12, 0, 0)
+                    .unwrap()
+                    .naive_utc(),
+                status_code: 404,
+                id: 2,
+                project: 0,
+                time: 10,
+            },
+        ])
+        .await;
+
+        assert_eq!(x.first().unwrap().duration, "24 hours");
+        assert_eq!(x.len(), 1);
+    }
 }

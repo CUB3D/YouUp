@@ -1,6 +1,6 @@
-use std::fmt;
 use crate::data::sms_subscription_repository::SmsSubscriberRepository;
 use crate::settings;
+use std::fmt;
 use twilio::{Client, OutboundMessage};
 
 pub struct SMSNotifier {
@@ -11,7 +11,6 @@ impl fmt::Debug for SMSNotifier {
         write!(f, "SMSNotifier ( client: ... )")
     }
 }
-
 
 impl Default for SMSNotifier {
     fn default() -> Self {

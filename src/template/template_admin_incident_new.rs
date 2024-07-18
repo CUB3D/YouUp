@@ -41,18 +41,18 @@ async fn admin_incidents_new(
 ) -> impl Responder {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .append_header((http::header::LOCATION, "/admin"))
+            .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
 
     let status_types = incident_status_type
-        .load::<IncidentStatusType>(&pool.get().unwrap())
+        .load::<IncidentStatusType>(&mut pool.get().unwrap())
         .expect("Unable to load incident status types");
 
     // let projects_list = project_repo.get_all_projects();
 
     let projects_list = projects
-        .load::<Project>(&pool.get().unwrap())
+        .load::<Project>(&mut pool.get().unwrap())
         .expect("Unable to load projects");
 
     let template = AdminNewIncidentTemplate {

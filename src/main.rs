@@ -38,11 +38,14 @@ use crate::template::template_history::get_incident_history;
 use crate::template::template_incident_details::get_incident_details;
 use crate::template::template_uptime::get_uptime;
 use crate::update_job::{process_pending_status_updates_job, run_update_job};
-use actix_identity::{CookieIdentityPolicy, IdentityService};
-use actix_web::cookie::SameSite;
+use actix_identity::IdentityMiddleware;
+use actix_session::config::CookieContentSecurity;
+use actix_session::storage::CookieSessionStore;
+use actix_session::SessionMiddleware;
+use actix_web::cookie::{Key, SameSite};
+use sentry_tracing::EventFilter;
 use std::env;
 use std::sync::Arc;
-use sentry_tracing::EventFilter;
 use tracing::Level;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -75,12 +78,15 @@ pub mod update_job;
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
-    let _guard = sentry::init(("https://c2d3ab1d150243ce9a828d92d5a77452@o289707.ingest.sentry.io/6486846", sentry::ClientOptions {
-        // Set this a to lower value in production
-        traces_sample_rate: 1.0,
-        release: sentry::release_name!(),
-        ..sentry::ClientOptions::default()
-    }));
+    let _guard = sentry::init((
+        "https://c2d3ab1d150243ce9a828d92d5a77452@o289707.ingest.sentry.io/6486846",
+        sentry::ClientOptions {
+            // Set this a to lower value in production
+            traces_sample_rate: 1.0,
+            release: sentry::release_name!(),
+            ..sentry::ClientOptions::default()
+        },
+    ));
 
     let sentry_layer = sentry_tracing::layer().event_filter(|md| match md.level() {
         &tracing::Level::ERROR => EventFilter::Event,
@@ -156,12 +162,22 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::default())
             .wrap(Compress::default())
             .wrap(NormalizePath::new(TrailingSlash::MergeOnly))
-            .wrap(IdentityService::new(
-                CookieIdentityPolicy::new(&settings::private_key())
-                    .name("you-up-auth")
-                    .same_site(SameSite::Lax)
-                    .secure(false),
-            ))
+            .wrap(IdentityMiddleware::default())
+            // The identity system is built on top of sessions. You must install the session
+            // middleware to leverage `actix-identity`. The session middleware must be mounted
+            // AFTER the identity middleware: `actix-web` invokes middleware in the OPPOSITE
+            // order of registration when it receives an incoming request.
+            .wrap(
+                SessionMiddleware::builder(
+                    CookieSessionStore::default(),
+                    Key::from(&settings::private_key()),
+                )
+                .cookie_name("you-up-auth".to_string())
+                .cookie_secure(false)
+                .cookie_content_security(CookieContentSecurity::Private)
+                .cookie_same_site(SameSite::Lax)
+                .build(),
+            )
     })
     .bind(host)?
     .run()

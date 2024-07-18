@@ -1,10 +1,11 @@
 use diesel::r2d2::ConnectionManager;
 use diesel::r2d2::Pool;
 use diesel::{Connection, MysqlConnection};
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use std::env;
 use tracing::warn;
 
-embed_migrations!();
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
 pub type Database = Pool<ConnectionManager<MysqlConnection>>;
 
@@ -15,7 +16,7 @@ pub fn get_db_connection() -> Database {
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-    let conn;
+    let mut conn;
     loop {
         match MysqlConnection::establish(&database_url) {
             Ok(x) => {
@@ -26,8 +27,8 @@ pub fn get_db_connection() -> Database {
         }
     }
 
-    embedded_migrations::run_with_output(&conn, &mut std::io::stdout())
-        .expect("Unable to run migrations");
+    conn.run_pending_migrations(MIGRATIONS)
+        .expect("Migrate fail");
 
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
 

@@ -44,12 +44,12 @@ pub async fn post_email_subscribe(
             .values(NewEmailSubscription {
                 email: form.email.clone(),
             })
-            .execute(&db.get().unwrap())
+            .execute(&mut db.get().unwrap())
             .unwrap();
 
         let entry = email_subscriptions::table
             .filter(email_subscriptions::dsl::email.eq(form.email.clone()))
-            .load::<EmailSubscription>(&db.get().unwrap())
+            .load::<EmailSubscription>(&mut db.get().unwrap())
             .unwrap();
 
         let message_body = EmailSubscriptionTemplate {
@@ -94,7 +94,7 @@ pub async fn get_email_confirm(
 
     diesel::update(email_subscriptions::table.filter(email_subscriptions::dsl::id.eq(form.id)))
         .set(email_subscriptions::dsl::confirmed.eq(true))
-        .execute(&db.get().unwrap())
+        .execute(&mut db.get().unwrap())
         .unwrap();
 
     tracing::info!("Confirmed subscription id={}", form.id);

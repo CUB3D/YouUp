@@ -50,7 +50,7 @@ impl Mailer {
 
         let subscribed_users = email_subscriptions::table
             .filter(email_subscriptions::dsl::confirmed.eq(true))
-            .load::<EmailSubscription>(&db.get().unwrap())
+            .load::<EmailSubscription>(&mut db.get().unwrap())
             .unwrap();
 
         for user in &subscribed_users {

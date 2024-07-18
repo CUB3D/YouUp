@@ -36,7 +36,7 @@ pub async fn get_incident_details(
 
     if project.is_none() {
         return HttpResponse::PermanentRedirect()
-            .append_header((http::header::LOCATION, "/"))
+            .append_header((http::header::LOCATION.as_str(), "/"))
             .finish();
     }
 

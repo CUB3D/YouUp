@@ -16,20 +16,20 @@ impl ProjectRepository for Database {
     fn get_project_by_name(&self, name: &str) -> Vec<Project> {
         projects::table
             .filter(projects::name.eq(name))
-            .load::<Project>(&self.get().unwrap())
+            .load::<Project>(&mut self.get().unwrap())
             .expect("Unable to load projects")
     }
 
     fn get_all_projects(&self) -> Vec<Project> {
         projects::table
-            .load::<Project>(&self.get().unwrap())
+            .load::<Project>(&mut self.get().unwrap())
             .expect("Unable to load projects")
     }
 
     fn get_project_by_id(&self, id: i32) -> Option<Project> {
         projects::table
             .filter(projects::id.eq(id))
-            .load::<Project>(&self.get().unwrap())
+            .load::<Project>(&mut self.get().unwrap())
             .expect("Unable to load project by id")
             .first()
             .cloned()
