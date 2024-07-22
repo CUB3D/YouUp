@@ -18,7 +18,7 @@ rand = "0.8.5"
 serde = { version = "1.0.204", features = ["derive"] }
 askama = "0.12.1"
 chrono = "0.4.38"
-diesel = { version = "2.2.1", features = ["r2d2", "mysql", "chrono"] }
+diesel = { version = "2.2.2", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "2.2.0"
 dotenv = "0.15.0"
 reqwest = { version = "0.12.5", features = ["gzip", "json"]}
