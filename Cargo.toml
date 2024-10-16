@@ -30,7 +30,7 @@ tracing-futures = "0.2.5"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 sentry-tracing = "0.34.0"
 sentry = "0.34.0"
-uuid = { version = "1.10.0", features = ["v4"] }
+uuid = { version = "1.11.0", features = ["v4"] }
 rss = { version = "2.0.8", features = ["builders"] }
 escaper = "0.1.1"
 atom_syndication = { version = "0.12.3", features = ["builders"] }
