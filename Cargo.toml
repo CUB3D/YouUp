@@ -28,7 +28,7 @@ lazy_static = "1.5.0"
 tracing = "0.1.40"
 tracing-futures = "0.2.5"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-sentry-tracing = "0.34.0"
+sentry-tracing = "0.35.0"
 sentry = "0.34.0"
 uuid = { version = "1.11.0", features = ["v4"] }
 rss = { version = "2.0.8", features = ["builders"] }
