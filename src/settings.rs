@@ -2,10 +2,10 @@ use crate::db::Database;
 use crate::diesel::RunQueryDsl;
 use crate::models::Setting;
 use diesel::{ExpressionMethods, QueryDsl};
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
+use rand::{Rng};
 use std::env;
 use std::ops::Deref;
+use rand::distr::Alphanumeric;
 
 pub fn get_host_protocol() -> String {
     env::var("HOST_PROTOCOL").unwrap_or_else(|_| "http".to_string())
@@ -56,7 +56,7 @@ pub fn admin_username() -> String {
 }
 
 lazy_static! {
-    static ref ADMIN_PASSWORD: String = thread_rng()
+    static ref ADMIN_PASSWORD: String = rand::rng()
         .sample_iter(&Alphanumeric)
         .map(char::from)
         .take(15)
@@ -64,7 +64,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    static ref PRIVATE_KEY: [u8; 32] = thread_rng().gen::<[u8; 32]>();
+    static ref PRIVATE_KEY: [u8; 32] = rand::rng().random::<[u8; 32]>();
 }
 
 pub fn admin_password() -> String {

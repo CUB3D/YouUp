@@ -2,36 +2,35 @@
 name = "you_up"
 version = "0.2.0"
 authors = ["CUB3D <callumthom11@gmail.com>"]
-edition = "2021"
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 actix-rt = "2.10.0"
-actix-web = "4.8.0"
+actix-web = "4.9.0"
 actix-files = "0.6.6"
-actix-identity = "0.7.1"
-actix-session = { version = "0.9.0", features = ["cookie-session"] }
-http = "1.1.0"
+actix-identity = "0.8.0"
+actix-session = { version = "0.10.1", features = ["cookie-session"] }
+http = "1.2.0"
 
-rand = "0.8.5"
-serde = { version = "1.0.204", features = ["derive"] }
+rand = "0.9.0"
+serde = { version = "1.0.218", features = ["derive"] }
 askama = "0.12.1"
-chrono = "0.4.38"
-diesel = { version = "2.2.4", features = ["r2d2", "mysql", "chrono"] }
+chrono = "0.4.39"
+diesel = { version = "2.2.7", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "2.2.0"
 dotenv = "0.15.0"
-reqwest = { version = "0.12.5", features = ["gzip", "json"]}
-tokio = { version = "1.38.1", features = ["full"] }
-lettre = { version = "0.11.9", features = ["smtp-transport"] }
+reqwest = { version = "0.12.12", features = ["gzip", "json"]}
+lettre = { version = "0.11.14", features = ["smtp-transport"] }
 lazy_static = "1.5.0"
-tracing = "0.1.40"
+tracing = "0.1.41"
 tracing-futures = "0.2.5"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-sentry-tracing = "0.34.0"
-sentry = "0.34.0"
-uuid = { version = "1.11.0", features = ["v4"] }
-rss = { version = "2.0.8", features = ["builders"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+sentry-tracing = "0.36.0"
+sentry = "0.36.0"
+uuid = { version = "1.14.0", features = ["v4"] }
+rss = { version = "2.0.12", features = ["builders"] }
 escaper = "0.1.1"
-atom_syndication = { version = "0.12.4", features = ["builders"] }
+atom_syndication = { version = "0.12.7", features = ["builders"] }
 twilio = "1.1.0"
