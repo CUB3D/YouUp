@@ -132,7 +132,7 @@ pub async fn run_update_job(
                                     "YouUp <alerts@you-up.net>",
                                     format!("Alert in project '{}'", domain.name),
                                     format!(
-                                        "Service is now down, received a status code of {} at {}",
+                                        "Service is now down, received a status code of {} at {}\nPrevious status: {stat:?}\nCurrent status: {stat2:?}\n",
                                         status.as_str(),
                                         Utc::now().format("%+")
                                     ),

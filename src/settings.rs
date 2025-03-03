@@ -100,6 +100,10 @@ pub fn sms_enabled() -> bool {
     env::var("SMS_NOTIFICATIONS").unwrap_or_else(|_| "false".to_string()) == "true"
 }
 
+pub fn sentry_enabled() -> bool {
+    env::var("SENTRY").unwrap_or_else(|_| "false".to_string()) == "true"
+}
+
 pub fn insecure() -> bool {
     let insecure =
         env::var("INSECURE").unwrap_or_else(|_| "false".to_string()) == "I_HATE_SECURITY";

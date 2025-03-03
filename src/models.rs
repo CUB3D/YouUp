@@ -35,7 +35,7 @@ pub struct NewProject {
     pub enabled: bool,
 }
 
-#[derive(Queryable, Clone)]
+#[derive(Queryable, Clone, Debug)]
 pub struct Status {
     pub id: i32,
     pub project: i32,

@@ -95,15 +95,21 @@ async fn main() -> std::io::Result<()> {
         _ => EventFilter::Ignore,
     });
 
-    tracing_subscriber::fmt::fmt()
-        .with_env_filter(
-            EnvFilter::builder()
-                .with_default_directive(LevelFilter::INFO.into())
-                .from_env_lossy(),
-        )
-        .finish()
-        .with(sentry_layer)
-        .init();
+    {
+        let temp = tracing_subscriber::fmt::fmt()
+            .with_env_filter(
+                EnvFilter::builder()
+                    .with_default_directive(LevelFilter::INFO.into())
+                    .from_env_lossy(),
+            )
+            .finish();
+
+        if settings::sentry_enabled() {
+            temp.with(sentry_layer).init();
+        } else {
+            temp.init();
+        }
+    }
 
     let db = db::get_db_connection().expect("Failed to get DB");
     let mailer = Arc::new(Mailer::default());
