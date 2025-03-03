@@ -10,7 +10,7 @@ Current git master -> [here](https://status.cub3d.pw)
 
 ### Running with docker-compose
 ```yaml
-version: '3'
+version: '3.7'
 services:
  you_up:
    container_name: status
@@ -24,3 +24,4 @@ services:
      HISTORY_SIZE: 30
    restart: unless-stopped
 ```    
+See `docker-compose.yaml` for a more complete example

@@ -1,0 +1,24 @@
+version: '3.7'
+services:
+  you_up:
+   container_name: status
+   build:
+     context: https://github.com/CUB3D/YouUp.git
+   ports:
+     - "8102:8102"
+   environment:
+     RUST_LOG: info
+     DATABASE_URL: "mysql://user:ChangeMeUser@mariadb/youup"
+     HISTORY_SIZE: 5
+   restart: unless-stopped
+   links:
+    - mariadb
+
+  mariadb:
+    image: mariadb:11.4
+    environment:
+      - MARIADB_ROOT_PASSWORD=ChangeMe
+      - MARIADB_USER=user
+      - MARIADB_PASSWORD=ChangeMeUser
+    ports:
+      - 3306:3306

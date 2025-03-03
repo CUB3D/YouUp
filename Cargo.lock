@@ -806,9 +806,11 @@ dependencies = [
  "byteorder",
  "chrono",
  "diesel_derives",
+ "libsqlite3-sys",
  "mysqlclient-sys",
  "percent-encoding",
  "r2d2",
+ "time",
  "url",
 ]
 
@@ -1692,6 +1694,16 @@ name = "libm"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
+
+[[package]]
+name = "libsqlite3-sys"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad8935b44e7c13394a179a438e0cebba0fe08fe01b54f152e29a93b5cf993fd4"
+dependencies = [
+ "pkg-config",
+ "vcpkg",
+]
 
 [[package]]
 name = "linux-raw-sys"
@@ -3579,6 +3591,7 @@ dependencies = [
  "actix-rt",
  "actix-session",
  "actix-web",
+ "anyhow",
  "askama",
  "atom_syndication",
  "chrono",

@@ -104,7 +104,7 @@ async fn main() -> std::io::Result<()> {
         .with(sentry_layer)
         .init();
 
-    let db = db::get_db_connection();
+    let db = db::get_db_connection().expect("Failed to get DB");
     let mailer = Arc::new(Mailer::default());
     let sms = Arc::new(SMSNotifier::default());
     let webhook = Arc::new(WebhookNotifier::default());
@@ -178,9 +178,9 @@ async fn main() -> std::io::Result<()> {
                     Key::from(&settings::private_key()),
                 )
                 .cookie_name("you-up-auth".to_string())
-                .cookie_secure(false)
+                .cookie_secure(true)
                 .cookie_content_security(CookieContentSecurity::Private)
-                .cookie_same_site(SameSite::Lax)
+                .cookie_same_site(SameSite::Strict)
                 .build(),
             )
     })

@@ -18,7 +18,7 @@ rand = "0.9.0"
 serde = { version = "1.0.218", features = ["derive"] }
 askama = "0.12.1"
 chrono = "0.4.39"
-diesel = { version = "2.2.7", features = ["r2d2", "mysql", "chrono"] }
+diesel = { version = "2.2.7", features = ["r2d2", "mysql", "chrono", "sqlite"] }
 diesel_migrations = "2.2.0"
 dotenv = "0.15.0"
 reqwest = { version = "0.12.12", features = ["gzip", "json"]}
@@ -34,3 +34,4 @@ rss = { version = "2.0.12", features = ["builders"] }
 escaper = "0.1.1"
 atom_syndication = { version = "0.12.7", features = ["builders"] }
 twilio = "1.1.0"
+anyhow = "1.0.86"

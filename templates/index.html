@@ -69,8 +69,10 @@
         ];
         perf_labels.reverse();
         perf_labels = perf_labels.map((t) => {
-            let x = new Date(Date.parse(t)).toLocaleString().split(", ")[1].split(":");
-            return x[0] + ':' + x[1] + ' ' + x[2].split(" ")[1];
+            let date = new Date(Date.parse(t));
+            let day_part = date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear();
+            let time_part = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            return time_part + " " + day_part;
         });
 
         let smallest_data = Math.max(0, Math.min(...perf_data) - Math.max(...perf_data) * 0.05);
