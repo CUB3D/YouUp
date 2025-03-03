@@ -4,6 +4,7 @@ pub mod template_admin_incident;
 pub mod template_admin_incident_new;
 pub mod template_admin_incident_status_new;
 pub mod template_admin_login;
+pub mod template_admin_project_new;
 pub mod template_admin_subscriptions;
 pub mod template_embed;
 pub mod template_feed_atom;

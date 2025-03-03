@@ -2,10 +2,11 @@ use crate::db::Database;
 use crate::diesel::RunQueryDsl;
 use crate::models::Setting;
 use diesel::{ExpressionMethods, QueryDsl};
-use rand::{Rng};
+use rand::Rng;
+use rand::distr::Alphanumeric;
 use std::env;
 use std::ops::Deref;
-use rand::distr::Alphanumeric;
+use tracing::error;
 
 pub fn get_host_protocol() -> String {
     env::var("HOST_PROTOCOL").unwrap_or_else(|_| "http".to_string())
@@ -64,12 +65,12 @@ lazy_static! {
 }
 
 lazy_static! {
-    static ref PRIVATE_KEY: [u8; 32] = rand::rng().random::<[u8; 32]>();
+    static ref PRIVATE_KEY: [u8; 64] = rand::rng().random::<[u8; 64]>();
 }
 
 pub fn admin_password() -> String {
     env::var("ADMIN_PASSWORD").unwrap_or_else(|_| {
-        println!("No admin password supplied, using '{}', set the ADMIN_PASSWORD environment variable to change to a persistent value.", ADMIN_PASSWORD.deref());
+        error!("No admin password supplied, using '{}', set the ADMIN_PASSWORD environment variable to change to a persistent value.", ADMIN_PASSWORD.deref());
         ADMIN_PASSWORD.clone()
     })
 }
@@ -77,7 +78,10 @@ pub fn admin_password() -> String {
 pub fn private_key() -> Vec<u8> {
     env::var("PRIVATE_KEY")
         .map(|s| s.into_bytes())
-        .unwrap_or_else(|_| PRIVATE_KEY.to_vec())
+        .unwrap_or_else(|_| {
+            error!("No PRIVATE_KEY set, generating a temporary one.");
+            PRIVATE_KEY.to_vec()
+        })
 }
 
 pub fn twilio_account_id() -> String {
@@ -94,6 +98,15 @@ pub fn twilio_contact_number() -> String {
 
 pub fn sms_enabled() -> bool {
     env::var("SMS_NOTIFICATIONS").unwrap_or_else(|_| "false".to_string()) == "true"
+}
+
+pub fn insecure() -> bool {
+    let insecure =
+        env::var("INSECURE").unwrap_or_else(|_| "false".to_string()) == "I_HATE_SECURITY";
+    if insecure {
+        error!("Using INSECURE mode, STOP");
+    }
+    insecure
 }
 
 pub struct PersistedSettings {

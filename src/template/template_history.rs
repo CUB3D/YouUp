@@ -2,12 +2,12 @@ use crate::data::project_repository::ProjectRepositoryData;
 use crate::data::status_repository::StatusRepositoryData;
 use crate::models::Project;
 use crate::project_status::ProjectStatusTypes;
-use crate::settings::{PersistedSettings, CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE};
+use crate::settings::{CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
 use crate::time_utils::get_days_from_month;
 use actix_identity::Identity;
 use actix_web::web::Data;
-use actix_web::{get, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, get};
 use askama::Template;
 use chrono::{Datelike, Utc};
 use std::ops::Sub;
@@ -36,7 +36,7 @@ pub async fn get_incident_history(
     settings: Data<PersistedSettings>,
     identity: Option<Identity>,
 ) -> impl Responder {
-    let projects = projects_repo.get_all_projects();
+    let projects = projects_repo.get_all_enabled_projects();
     let status_list = status_repo.get_status_last_90_days();
 
     let mut months = Vec::new();

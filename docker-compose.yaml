@@ -1,4 +1,3 @@
-version: '3.7'
 services:
   you_up:
    container_name: status
@@ -8,7 +7,7 @@ services:
      - "8102:8102"
    environment:
      RUST_LOG: info
-     DATABASE_URL: "mysql://user:ChangeMeUser@mariadb/youup"
+     DATABASE_URL: "mysql://root:ChangeMe@mariadb:3306/youup"
      HISTORY_SIZE: 5
    restart: unless-stopped
    links:
@@ -16,9 +15,14 @@ services:
 
   mariadb:
     image: mariadb:11.4
+    network_mode: host
+    volumes:
+      - mariadb_data:/var/lib/mysql
     environment:
       - MARIADB_ROOT_PASSWORD=ChangeMe
-      - MARIADB_USER=user
-      - MARIADB_PASSWORD=ChangeMeUser
+      - MARIADB_DATABASE=youup
     ports:
-      - 3306:3306
+      - "3306:3306"
+
+volumes:
+  mariadb_data:

@@ -2,7 +2,7 @@ use crate::data::project_repository::ProjectRepositoryData;
 use crate::data::status_repository::StatusRepositoryData;
 use crate::settings;
 use crate::template::index::status_day::StatusDay;
-use crate::template::index::template_index::{compute_downtime_periods, ProjectStatus};
+use crate::template::index::template_index::{ProjectStatus, compute_downtime_periods};
 use actix_web::get;
 use actix_web::web::Path;
 use actix_web::{HttpResponse, Responder};

@@ -1,7 +1,7 @@
 use crate::data::incident_repository::IncidentRepositoryData;
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, Project};
-use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
+use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use actix_web::get;
 use actix_web::web::{Data, Path};
 use actix_web::{HttpResponse, Responder};

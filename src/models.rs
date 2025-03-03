@@ -2,6 +2,7 @@ use super::schema::email_subscriptions;
 use super::schema::incident_status_type;
 use super::schema::incident_status_update;
 use super::schema::incidents;
+use super::schema::projects;
 use super::schema::settings;
 use super::schema::sms_subscriptions;
 use super::schema::status;
@@ -23,6 +24,15 @@ impl Project {
     pub fn formatted_description(&self) -> String {
         self.description.clone().unwrap_or_default()
     }
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = projects)]
+pub struct NewProject {
+    pub url: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub enabled: bool,
 }
 
 #[derive(Queryable, Clone)]

@@ -8,19 +8,16 @@
         <h2 class="mr-auto">Projects</h2>
     </div>
 
-    <form action="/admin/dashboard" method="post">
-        {% for project in projects %}
+    {% for project in projects %}
+        <form action="/admin/dashboard" method="post">
+            <input type="hidden" name="project_id" value="{{ project.id }}"/>
             <div class="card mt-2 mb-2">
                 <div class="card-header">
-                    <input type="text" class="card-title" id="{{project.id}}_name" value="{{ project.name }}"/>
+                    <input type="text" class="card-title form-control" id="{{project.id}}_name" value="{{ project.name }}" name="name"/>
                 </div>
                 <div class="card-body">
-                    <div class="custom-control custom-switch">
-                        {% if project.enabled %}
-                            <input type="checkbox" class="custom-control-input" id="{{project.id}}_enabled" name="enabled" checked>
-                        {% else %}
-                            <input type="checkbox" class="custom-control-input" id="{{project.id}}_enabled" name="enabled">
-                        {% endif %}
+                    <div class="custom-control custom-switch form-group">
+                            <input type="checkbox" class="custom-control-input" id="{{project.id}}_enabled" name="enabled" {% if project.enabled %}checked{% endif %} >
                         <label class="custom-control-label" for="{{project.id}}_enabled">Show on homepage</label>
                     </div>
                     <div class="form-group">
@@ -28,20 +25,35 @@
                     </div>
                     <div class="form-group">
                         <label for="{{project.id}}_description">Description</label>
-                        <input type="text" id="{{project.id}}_description" value='{{project.formatted_description()}}'>
+                        <input type="text" class="form-control" id="{{project.id}}_description" value='{{project.formatted_description()}}' name="description"/>
                     </div>
                   <div class="form-group">
                     <label for="{{project.id}}_url">URL</label>
-                    <input type="text" id="{{project.id}}_url" value='{{project.url}}'>
+                    <input type="text" class="form-control" id="{{project.id}}_url" value='{{project.url}}' name="url">
                   </div>
                     <div class="form-group">
                         <a href="/embed/{{project.id}}">Embed URL</a>
                     </div>
                 </div>
             </div>
-        {% endfor %}
         <div class="form-group">
             <input type="submit" class="btn btn-primary" value="Save">
+        </div>
+    </form>
+    {% endfor %}
+
+
+    <form action="/admin/project/new" method="get">
+        <div class="card mt-2 mb-2">
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="_new_name">Name</label>
+                    <input type="text" class="form-control" id="_new_name" name="_new_name">
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="submit" class="btn btn-primary" value="Add">
         </div>
     </form>
 </div>

@@ -5,7 +5,7 @@ use crate::diesel::BelongingToDsl;
 use crate::diesel::GroupedBy;
 use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, Project, Status};
 use crate::project_status::ProjectStatusTypes;
-use crate::settings::{PersistedSettings, CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE};
+use crate::settings::{CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::index::downtime::Downtime;
 use crate::template::index::status_day::StatusDay;
 use crate::template::template_admin_login::AdminLogin;
@@ -143,7 +143,7 @@ pub async fn root(
     status_repo: StatusRepositoryData,
     identity: Option<Identity>,
 ) -> impl Responder {
-    let projects_list = project_repo.get_all_projects();
+    let projects_list = project_repo.get_all_enabled_projects();
 
     let status_list: Vec<_> = status_repo.get_status_last_30_days();
 

@@ -1,10 +1,10 @@
 use actix_files::Files;
 use actix_rt::spawn;
 
-use actix_web::middleware::{Compress, Logger, NormalizePath, TrailingSlash};
-use actix_web::web::{resource, Data};
 use actix_web::App;
 use actix_web::HttpServer;
+use actix_web::middleware::{Compress, Logger, NormalizePath, TrailingSlash};
+use actix_web::web::{Data, resource};
 use dotenv::dotenv;
 
 use crate::data::incident_repository::IncidentRepository;
@@ -39,17 +39,18 @@ use crate::template::template_incident_details::get_incident_details;
 use crate::template::template_uptime::get_uptime;
 use crate::update_job::{process_pending_status_updates_job, run_update_job};
 use actix_identity::IdentityMiddleware;
+use actix_session::SessionMiddleware;
 use actix_session::config::CookieContentSecurity;
 use actix_session::storage::CookieSessionStore;
-use actix_session::SessionMiddleware;
 use actix_web::cookie::{Key, SameSite};
 use sentry_tracing::EventFilter;
 use std::env;
 use std::sync::Arc;
+use template::template_admin_project_new::get_admin_project_new;
 use tracing::level_filters::LevelFilter;
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::EnvFilter;
 
 #[macro_use]
 extern crate diesel;
@@ -164,6 +165,7 @@ async fn main() -> std::io::Result<()> {
             .service(post_admin_incidents_new)
             .service(get_admin_incident_status_new)
             .service(post_admin_incident_status_new)
+            .service(get_admin_project_new)
             .wrap(Logger::default())
             .wrap(Compress::default())
             .wrap(NormalizePath::new(TrailingSlash::Trim))
@@ -178,7 +180,7 @@ async fn main() -> std::io::Result<()> {
                     Key::from(&settings::private_key()),
                 )
                 .cookie_name("you-up-auth".to_string())
-                .cookie_secure(true)
+                .cookie_secure(!settings::insecure())
                 .cookie_content_security(CookieContentSecurity::Private)
                 .cookie_same_site(SameSite::Strict)
                 .build(),

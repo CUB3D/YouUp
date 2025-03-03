@@ -5,7 +5,7 @@ use diesel::{Connection, MysqlConnection};
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness};
 use std::env;
 use std::time::Duration;
-use tracing::warn;
+use tracing::{error, warn};
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
@@ -25,7 +25,10 @@ pub fn get_db_connection() -> anyhow::Result<Database> {
                 conn = x;
                 break;
             }
-            Err(_) => warn!("Error connecting to {}", database_url),
+            Err(e) => {
+                warn!("Error connecting to {}", database_url);
+                error!("{:?}", e);
+            }
         }
         std::thread::sleep(Duration::from_secs(1));
     }
@@ -35,9 +38,9 @@ pub fn get_db_connection() -> anyhow::Result<Database> {
 
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
 
-    Ok(diesel::r2d2::Pool::builder()
+    diesel::r2d2::Pool::builder()
         .max_size(4)
         .test_on_check_out(true)
         .build(manager)
-        .context("Cant create db pool")?)
+        .context("Cant create db pool")
 }

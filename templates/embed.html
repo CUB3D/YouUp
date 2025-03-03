@@ -2,22 +2,6 @@
 
 {% block content %}
 <div class="container-md">
-<!--    <form action="/subscribe/email" method="post">-->
-<!--        <div class="form-group">-->
-<!--            <label for="inputEmail">Email</label>-->
-<!--            <input type="email" class="form-control" id="inputEmail" placeholder="example@example.com" name="email">-->
-<!--        </div>-->
-<!--        <div class="form-group">-->
-<!--            <input type="submit" class="btn btn-primary" id="inputUsername" placeholder="Username" name="username" value="Subscribe">-->
-<!--        </div>-->
-<!--        <p>You can also subscribe via the <a href="/feed/rss">RSS</a> or <a href="/feed/atom">Atom</a> feed</p>-->
-<!--    </form>-->
-
-<!--    <div class="d-flex flex-row">-->
-<!--        <h2 class="mr-auto">Current Status</h2>-->
-<!--        <p class="align-self-end mb-0 font-weight-light">Data from the past {{ history_size }} days. <a href="/uptime">View historical uptime.</a></p>-->
-<!--    </div>-->
-
     <div class="card mt-2 mb-2">
         <div class="card-header">
             <div class="d-flex flex-row">
@@ -57,8 +41,10 @@
         ];
         perf_labels.reverse();
         perf_labels = perf_labels.map((t) => {
-            let x = new Date(Date.parse(t)).toLocaleString().split(", ")[1].split(":");
-            return x[0] + ':' + x[1] + ' ' + x[2].split(" ")[1];
+            let date = new Date(Date.parse(t));
+            let day_part = date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear();
+            let time_part = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            return time_part + " " + day_part;
         });
 
         let smallest_data = Math.max(0, Math.min(...perf_data) - Math.max(...perf_data) * 0.05);

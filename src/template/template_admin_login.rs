@@ -1,9 +1,10 @@
-use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
+use crate::settings;
+use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use actix_identity::Identity;
 use actix_web::post;
 use actix_web::web::Data;
-use actix_web::{get, HttpMessage, HttpRequest};
-use actix_web::{web::Form, HttpResponse, Responder};
+use actix_web::{HttpMessage, HttpRequest, get};
+use actix_web::{HttpResponse, Responder, web::Form};
 use askama::Template;
 use serde::Deserialize;
 
@@ -15,7 +16,7 @@ impl AdminLogin for Option<Identity> {
     fn is_logged_in(&self) -> bool {
         match self {
             Some(id) => matches!(id.id(), Ok(x) if x == "admin"),
-            None => false,
+            None => settings::insecure(),
         }
     }
 }
