@@ -1,4 +1,4 @@
-FROM rust:latest
+FROM public.ecr.aws/docker/library/rust:latest
 
 WORKDIR /home/code
 
