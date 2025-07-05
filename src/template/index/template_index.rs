@@ -14,7 +14,7 @@ use crate::template::template_admin_login::AdminLogin;
 use crate::{get_pool, settings, time_formatter};
 use actix_identity::Identity;
 use actix_web::web::Data;
-use actix_web::{get, head, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, get, head};
 use askama::Template;
 use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::dsl::sql;
@@ -84,7 +84,7 @@ pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime>
         }];
     }
 
-    let mut downtime = Vec::new();
+    let mut downtime = Vec::with_capacity(status_on_day.len());
     let mut downtime_period_start: Option<NaiveDateTime> = status_on_day
         .first()
         .map(|e| Some(e.created))
@@ -110,7 +110,7 @@ pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime>
         }
     }
     if let Some(tmp) = downtime_period_start {
-        // If it was still down at the last reading of the day then assume it was down for all of the rest of that day
+        // If it was still down at the last reading of the day then assume it was down for the rest of that entire day
 
         let time_of_first_request = status_on_day.first().map(|s| s.created).unwrap();
 
@@ -157,13 +157,14 @@ pub async fn root(
 
     let history_size = settings::get_history_size();
 
-    let mut p = Vec::new();
+    let now = Utc::now();
+
+    let mut p = Vec::with_capacity(projects_list.len());
     for proj in projects_list {
         let mut days: Vec<StatusDay> = Vec::with_capacity(history_size);
         for x in (0..history_size).rev() {
-            let now = Utc::now();
             let then = now
-                .sub(chrono::Duration::days(x.try_into().unwrap()))
+                .sub(Duration::days(x.try_into().unwrap()))
                 .with_hour(0)
                 .unwrap()
                 .with_minute(0)

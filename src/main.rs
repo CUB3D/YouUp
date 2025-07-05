@@ -4,7 +4,7 @@ use actix_rt::spawn;
 use actix_web::App;
 use actix_web::HttpServer;
 use actix_web::middleware::{Compress, Logger, NormalizePath, TrailingSlash};
-use actix_web::web::{Data};
+use actix_web::web::Data;
 use dotenv::dotenv;
 
 use crate::data::incident_repository::IncidentRepository;

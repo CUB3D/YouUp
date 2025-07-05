@@ -15,6 +15,7 @@ pub trait StatusRepository {
 }
 
 impl StatusRepository for Database {
+    //TODO: history size?
     fn get_status_last_30_days(&self) -> Vec<Status> {
         let status_list: Vec<_> = crate::schema::status::dsl::status
             .filter(sql::<Bool>("created > DATE_SUB(NOW(), INTERVAL 30 day)"))
