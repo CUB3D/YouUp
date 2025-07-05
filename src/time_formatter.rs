@@ -10,11 +10,11 @@ pub fn format_duration(d: &Duration) -> String {
         if hours == 1 {
             output += "1 hour ";
         } else {
-            output += format!("{} hours ", hours).as_str();
+            output += format!("{hours} hours ").as_str();
         }
     }
     if minutes > 0 {
-        output += format!("{} minutes", minutes).as_str();
+        output += format!("{minutes} minutes").as_str();
     }
 
     output.trim().to_string()

@@ -71,7 +71,7 @@ pub mod template;
 pub mod time_formatter;
 pub mod time_utils;
 pub mod update_job;
-
+pub mod utils;
 //TODO: REST API
 //TODO: twitter
 //TODO: make sentry optional

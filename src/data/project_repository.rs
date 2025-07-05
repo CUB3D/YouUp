@@ -9,8 +9,8 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 pub type ProjectRepositoryData = Data<Box<dyn ProjectRepository>>;
 
 pub trait ProjectRepository {
-    fn get_project_by_name(&self, name: &str) -> Vec<Project>;
-    fn get_all_enabled_projects(&self) -> Vec<Project>;
+    fn get_project_by_name(&self, name: &str) -> anyhow::Result<Vec<Project>>;
+    fn get_all_enabled_projects(&self) -> anyhow::Result<Vec<Project>>;
     fn get_project_by_id(&self, id: i32) -> Option<Project>;
     fn create(&self, name: &str) -> anyhow::Result<()>;
     fn update_project(
@@ -24,19 +24,24 @@ pub trait ProjectRepository {
 }
 
 impl ProjectRepository for Database {
-    fn get_project_by_name(&self, name: &str) -> Vec<Project> {
-        projects::table
+    fn get_project_by_name(&self, name: &str) -> anyhow::Result<Vec<Project>> {
+        let mut pool = self.get()?;
+
+        Ok(projects::table
             .filter(projects::name.eq(name))
-            .load::<Project>(&mut self.get().unwrap())
-            .expect("Unable to load projects")
+            .load::<Project>(&mut pool)
+            .expect("Unable to load projects"))
     }
 
-    fn get_all_enabled_projects(&self) -> Vec<Project> {
-        projects::table
+    fn get_all_enabled_projects(&self) -> anyhow::Result<Vec<Project>> {
+        let mut pool = self.get()?;
+
+        Ok(projects::table
             .filter(projects::enabled.eq(true))
-            .load::<Project>(&mut self.get().unwrap())
-            .expect("Unable to load projects")
+            .load::<Project>(&mut pool)
+            .expect("Unable to load projects"))
     }
+
     fn get_project_by_id(&self, id: i32) -> Option<Project> {
         projects::table
             .filter(projects::id.eq(id))

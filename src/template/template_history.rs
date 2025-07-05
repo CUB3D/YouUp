@@ -36,7 +36,14 @@ pub async fn get_incident_history(
     settings: Data<PersistedSettings>,
     identity: Option<Identity>,
 ) -> impl Responder {
-    let projects = projects_repo.get_all_enabled_projects();
+    let projects = match projects_repo.get_all_enabled_projects() {
+        Ok(projects) => projects,
+        Err(err) => {
+            tracing::warn!("Failed to get projects: {:?}", err);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
     let status_list = status_repo.get_status_last_90_days();
 
     let mut months = Vec::new();

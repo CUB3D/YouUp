@@ -5,11 +5,13 @@ use crate::diesel::BelongingToDsl;
 use crate::diesel::GroupedBy;
 use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, Project, Status};
 use crate::project_status::ProjectStatusTypes;
+use crate::schema::incidents::dsl::incidents;
+use crate::schema::{incident_status_type, incident_status_update};
 use crate::settings::{CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::index::downtime::Downtime;
 use crate::template::index::status_day::StatusDay;
 use crate::template::template_admin_login::AdminLogin;
-use crate::{settings, time_formatter};
+use crate::{get_pool, settings, time_formatter};
 use actix_identity::Identity;
 use actix_web::web::Data;
 use actix_web::{HttpResponse, Responder};
@@ -139,11 +141,17 @@ pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime>
 pub async fn root(
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
-    project_repo: ProjectRepositoryData,
+    projects_repo: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
     identity: Option<Identity>,
 ) -> impl Responder {
-    let projects_list = project_repo.get_all_enabled_projects();
+    let projects_list = match projects_repo.get_all_enabled_projects() {
+        Ok(projects) => projects,
+        Err(err) => {
+            tracing::warn!("Failed to get projects: {:?}", err);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
 
     let status_list: Vec<_> = status_repo.get_status_last_30_days();
 
@@ -188,22 +196,20 @@ pub async fn root(
         })
     }
 
-    use crate::schema::incident_status_type;
-    use crate::schema::incident_status_update;
-    use crate::schema::incidents::dsl::*;
-
     let mut incident_days = Vec::with_capacity(10);
+
+    let mut pool = get_pool!(pool);
 
     let all_incidents: Vec<_> = incidents
         .filter(sql::<Bool>("created > DATE_SUB(NOW(), INTERVAL 10 day)"))
-        .load::<Incidents>(&mut pool.get().unwrap())
+        .load::<Incidents>(&mut pool)
         .unwrap();
 
     let incident_days_status = IncidentStatusUpdate::belonging_to(&all_incidents)
         .order(incident_status_update::dsl::created.desc())
         .inner_join(incident_status_type::table)
         .filter(incident_status_type::dsl::id.eq(incident_status_update::dsl::id))
-        .load(&mut pool.get().unwrap())
+        .load(&mut pool)
         .unwrap()
         .grouped_by(&all_incidents);
     let incidents_and_status = all_incidents

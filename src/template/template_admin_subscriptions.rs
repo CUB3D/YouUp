@@ -3,9 +3,9 @@ use crate::data::webhook_subscription_repository::WebhookSubscriberRepositoryDat
 use crate::db::Database;
 use crate::models::{EmailSubscription, SmsSubscription, WebhookSubscription};
 use crate::schema::email_subscriptions::dsl::email_subscriptions;
-use crate::settings;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
+use crate::{get_pool, settings};
 use actix_identity::Identity;
 use actix_web::get;
 use actix_web::post;
@@ -47,8 +47,10 @@ async fn admin_subscription(
             .finish();
     }
 
+    let mut pool = get_pool!(pool);
+
     let subscriptions = email_subscriptions
-        .load::<EmailSubscription>(&mut pool.get().unwrap())
+        .load::<EmailSubscription>(&mut pool)
         .expect("Unable to load subscriptions");
 
     let template = AdminSubscriptionTemplate {

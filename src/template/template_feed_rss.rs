@@ -24,7 +24,7 @@ async fn rss_feed(incidents: IncidentRepositoryData) -> impl Responder {
             let description = status
                 .iter()
                 .map(|(status, type_)| format!("<p>{} - {}</p>", type_.title, status.message))
-                .fold(String::new(), |a, b| format!("{}\n{}", a, b));
+                .fold(String::new(), |a, b| format!("{a}\n{b}"));
 
             ItemBuilder::default()
                 .title(format!(

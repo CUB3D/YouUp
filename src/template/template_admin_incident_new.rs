@@ -1,6 +1,7 @@
 use crate::data::incident_repository::IncidentRepositoryData;
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::db::Database;
+use crate::get_pool;
 use crate::models::{IncidentStatusType, NewIncident, NewIncidentStatusUpdate, Project};
 use crate::schema::incident_status_type::dsl::incident_status_type;
 use crate::schema::projects::dsl::projects;
@@ -38,21 +39,23 @@ async fn admin_incidents_new(
     id: Option<Identity>,
     pool: Data<Database>,
     settings: Data<PersistedSettings>,
-) -> impl Responder {
+) -> HttpResponse {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
             .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
 
+    let mut pool = get_pool!(pool);
+
     let status_types = incident_status_type
-        .load::<IncidentStatusType>(&mut pool.get().unwrap())
+        .load::<IncidentStatusType>(&mut pool)
         .expect("Unable to load incident status types");
 
     // let projects_list = project_repo.get_all_projects();
 
     let projects_list = projects
-        .load::<Project>(&mut pool.get().unwrap())
+        .load::<Project>(&mut pool)
         .expect("Unable to load projects");
 
     let template = AdminNewIncidentTemplate {
@@ -92,8 +95,15 @@ pub async fn post_admin_incidents_new(
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin Incidents New POST", request_id = %request_id);
 
-    let project_id = project_repo
-        .get_project_by_name(&form_data.project)
+    let project = match project_repo.get_project_by_name(&form_data.project) {
+        Ok(project) => project,
+        Err(e) => {
+            tracing::warn!("Failed to get project by name: {e:?}");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let project_id = project
         .first()
         .map(|f| f.id)
         .expect("Unable to find project with given id");

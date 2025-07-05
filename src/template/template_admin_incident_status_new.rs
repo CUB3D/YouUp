@@ -1,6 +1,7 @@
 use crate::data::incident_repository::IncidentRepositoryData;
 use crate::db::Database;
 use crate::diesel::RunQueryDsl;
+use crate::get_pool;
 use crate::models::{IncidentStatusType, NewIncidentStatusUpdate};
 use crate::schema::incident_status_type::dsl::incident_status_type;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
@@ -43,8 +44,10 @@ async fn admin_incident_status_new(
             .finish();
     }
 
+    let mut pool = get_pool!(pool);
+
     let status_types = incident_status_type
-        .load::<IncidentStatusType>(&mut pool.get().unwrap())
+        .load::<IncidentStatusType>(&mut pool)
         .expect("Unable to load incident status types");
 
     let template = AdminNewIncidentStatusTemplate {

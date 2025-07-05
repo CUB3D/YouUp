@@ -1,5 +1,6 @@
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::db::Database;
+use crate::get_pool;
 use crate::models::Project;
 use crate::schema::projects::dsl::projects;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
@@ -31,8 +32,10 @@ pub struct ProjectUpdate {
 }
 
 async fn admin_dashboard(pool: Data<Database>, settings: Data<PersistedSettings>) -> HttpResponse {
+    let mut pool = get_pool!(pool);
+
     let projects_list = projects
-        .load::<Project>(&mut pool.get().unwrap())
+        .load::<Project>(&mut pool)
         .expect("Unable to load projects");
 
     let template = AdminDashboardTemplate {
