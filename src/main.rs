@@ -4,7 +4,7 @@ use actix_rt::spawn;
 use actix_web::App;
 use actix_web::HttpServer;
 use actix_web::middleware::{Compress, Logger, NormalizePath, TrailingSlash};
-use actix_web::web::{Data, resource};
+use actix_web::web::{Data};
 use dotenv::dotenv;
 
 use crate::data::incident_repository::IncidentRepository;
@@ -18,7 +18,7 @@ use crate::notifications::sms::SMSNotifier;
 use crate::notifications::webhook::WebhookNotifier;
 use crate::settings::PersistedSettings;
 use crate::template::index::status_day::StatusDay;
-use crate::template::index::template_index::root;
+use crate::template::index::template_index::{get_index, head_index};
 use crate::template::template_admin_dashboard::{get_admin_dashboard, post_admin_dashboard};
 use crate::template::template_admin_incident::get_admin_incidents;
 use crate::template::template_admin_incident_new::{
@@ -151,7 +151,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(sms.clone()))
             .app_data(Data::new(webhook.clone()))
             .service(Files::new("/static", "./static"))
-            .service(resource("/").to(root))
+            .service(get_index)
+            .service(head_index)
             .service(get_uptime)
             .service(get_incident_details)
             .service(get_admin_login)

@@ -14,7 +14,7 @@ use crate::template::template_admin_login::AdminLogin;
 use crate::{get_pool, settings, time_formatter};
 use actix_identity::Identity;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder};
+use actix_web::{get, head, HttpResponse, Responder};
 use askama::Template;
 use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::dsl::sql;
@@ -144,7 +144,7 @@ pub async fn root(
     projects_repo: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
     identity: Option<Identity>,
-) -> impl Responder {
+) -> HttpResponse {
     let projects_list = match projects_repo.get_all_enabled_projects() {
         Ok(projects) => projects,
         Err(err) => {
@@ -359,4 +359,20 @@ mod test {
         assert_eq!(x.first().unwrap().duration, "24 hours");
         assert_eq!(x.len(), 1);
     }
+}
+
+#[get("/")]
+pub async fn get_index(
+    pool: Data<Database>,
+    settings: Data<PersistedSettings>,
+    projects_repo: ProjectRepositoryData,
+    status_repo: StatusRepositoryData,
+    identity: Option<Identity>,
+) -> HttpResponse {
+    root(pool, settings, projects_repo, status_repo, identity).await
+}
+
+#[head("/")]
+pub async fn head_index() -> impl Responder {
+    return HttpResponse::Ok().finish();
 }
