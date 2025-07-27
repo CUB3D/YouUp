@@ -375,5 +375,5 @@ pub async fn get_index(
 
 #[head("/")]
 pub async fn head_index() -> impl Responder {
-    return HttpResponse::Ok().finish();
+    HttpResponse::Ok().finish()
 }

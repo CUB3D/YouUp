@@ -11,6 +11,7 @@ use crate::notifications::sms::SMSNotifier;
 use crate::notifications::webhook::{WebhookNotifier, WebhookPayload};
 use crate::schema::status as stat;
 use chrono::Utc;
+use http::StatusCode;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -75,6 +76,45 @@ pub async fn process_pending_status_updates_job(db: Database) {
     }
 }
 
+pub async fn check_domain(c: &Client, domain: &Project) -> (Duration, StatusCode) {
+    let req = c.get(&domain.url).send();
+    let req_start_time = Instant::now();
+    let response = req.await;
+    let req_duration = req_start_time.elapsed();
+    let status = response
+        .map(|v| v.status())
+        .unwrap_or(StatusCode::NOT_FOUND);
+
+    (req_duration, status)
+}
+
+pub async fn check_domain_retry(c: &Client, domain: &Project) -> (Duration, StatusCode) {
+    // Initial req
+    let (mut dur, mut sc) = check_domain(c, domain).await;
+
+    // If failed, try a few more times
+    if !sc.is_success() {
+        let mut tries = 3;
+        while tries > 0 {
+            // Try again in a few secs
+            actix_rt::time::sleep(Duration::from_secs(45)).await;
+
+            // If one of these is success then maybe we just dropped a packet
+            let (ndur, nsc) = check_domain(c, domain).await;
+            if nsc.is_success() {
+                dur = ndur;
+                sc = nsc;
+                break;
+            }
+
+            tries -= 1;
+        }
+    }
+
+    // If we are still failed here its probably real
+    (dur, sc)
+}
+
 #[tracing::instrument(skip(db, webhook_subscription_repo, sms_subscription_repo))]
 pub async fn run_update_job(
     mailer: Arc<Mailer>,
@@ -99,13 +139,7 @@ pub async fn run_update_job(
                     tracing::info!("Checking {}", domain.name);
 
                     // Check if domain is up, store in db and wait
-                    let req = c.get(&domain.url).send();
-                    let req_start_time = Instant::now();
-                    let response = req.await;
-                    let req_duration = req_start_time.elapsed();
-                    let status = response
-                        .map(|v| v.status())
-                        .unwrap_or(reqwest::StatusCode::NOT_FOUND);
+                    let (req_duration, status) = check_domain_retry(&c, domain).await;
 
                     // Get the most recent status
                     let most_recent_status = stat::table
