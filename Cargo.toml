@@ -21,7 +21,7 @@ diesel = { version = "=2.2.12", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "=2.2.0"
 dotenv = "=0.15.0"
 reqwest = { version = "=0.12.22", features = ["gzip", "json"]}
-lettre = { version = "=0.11.17", features = ["smtp-transport"] }
+lettre = { version = "=0.11.18", features = ["smtp-transport"] }
 lazy_static = "=1.5.0"
 tracing = "=0.1.41"
 tracing-futures = "=0.2.5"
