@@ -33,7 +33,7 @@ rss = { version = "=2.0.12", features = ["builders"] }
 escaper = "=0.1.1"
 atom_syndication = { version = "=0.12.7", features = ["builders"] }
 twilio = "=1.1.0"
-anyhow = "=1.0.98"
+anyhow = "=1.0.100"
 
 [profile.release]
 debug = true
