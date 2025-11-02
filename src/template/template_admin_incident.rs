@@ -3,9 +3,9 @@ use crate::models::Incidents;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
 use actix_identity::Identity;
+use actix_web::HttpResponse;
 use actix_web::get;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder};
 use askama::Template;
 use serde::Deserialize;
 use uuid::Uuid;
@@ -25,7 +25,7 @@ async fn admin_incidents(
     id: Option<Identity>,
     settings: Data<PersistedSettings>,
     incident_repo: IncidentRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin Incidents", request_id = %request_id);
     let _guard = span.enter();
@@ -53,6 +53,6 @@ pub async fn get_admin_incidents(
     id: Option<Identity>,
     settings: Data<PersistedSettings>,
     incident_repo: IncidentRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
     admin_incidents(id, settings, incident_repo).await
 }

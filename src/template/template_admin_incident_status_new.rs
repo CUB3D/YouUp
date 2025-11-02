@@ -1,16 +1,16 @@
 use crate::data::incident_repository::IncidentRepositoryData;
 use crate::db::Database;
 use crate::diesel::RunQueryDsl;
-use crate::get_pool;
 use crate::models::{IncidentStatusType, NewIncidentStatusUpdate};
 use crate::schema::incident_status_type::dsl::incident_status_type;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
+use crate::{get_db, get_pool};
 use actix_identity::Identity;
 use actix_web::get;
 use actix_web::post;
 use actix_web::web::{Data, Path};
-use actix_web::{HttpResponse, Responder, web::Form};
+use actix_web::{HttpResponse, web::Form};
 use askama::Template;
 use serde::Deserialize;
 use tracing_futures::Instrument;
@@ -35,9 +35,9 @@ pub struct StatusUpdate {
 async fn admin_incident_status_new(
     incident_id: i32,
     id: Option<Identity>,
-    pool: Data<Database>,
+    pool: Database,
     settings: Data<PersistedSettings>,
-) -> impl Responder {
+) -> HttpResponse {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
             .append_header((http::header::LOCATION.as_str(), "/admin"))
@@ -65,11 +65,12 @@ async fn admin_incident_status_new(
 pub async fn get_admin_incident_status_new(
     path: Path<(i32,)>,
     id: Option<Identity>,
-    pool: Data<Database>,
     settings: Data<PersistedSettings>,
-) -> impl Responder {
+) -> HttpResponse {
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin Incidents New Status GET", request_id = %request_id);
+
+    let pool = get_db!();
 
     admin_incident_status_new(path.into_inner().0, id, pool, settings)
         .instrument(span)
@@ -80,13 +81,14 @@ pub async fn get_admin_incident_status_new(
 pub async fn post_admin_incident_status_new(
     path: Path<(i32,)>,
     id: Option<Identity>,
-    pool: Data<Database>,
     incident_repo: IncidentRepositoryData,
     settings: Data<PersistedSettings>,
     form_data: Form<StatusUpdate>,
-) -> impl Responder {
+) -> HttpResponse {
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin Incidents New Status POST", request_id = %request_id);
+
+    let pool = get_db!();
 
     let status_type = incident_repo
         .get_incident_status_type_by_title(&form_data.status_type)

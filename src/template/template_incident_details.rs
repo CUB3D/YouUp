@@ -2,9 +2,9 @@ use crate::data::incident_repository::IncidentRepositoryData;
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::models::{IncidentStatusType, IncidentStatusUpdate, Incidents, Project};
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
+use actix_web::HttpResponse;
 use actix_web::get;
 use actix_web::web::{Data, Path};
-use actix_web::{HttpResponse, Responder};
 use askama::Template;
 use uuid::Uuid;
 
@@ -24,7 +24,7 @@ pub async fn get_incident_details(
     settings: Data<PersistedSettings>,
     incidents: IncidentRepositoryData,
     projects: ProjectRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
     let request_id = Uuid::new_v4();
     let span =
         tracing::info_span!("Incident", request_id = %request_id, incident_id = id.as_ref().0);

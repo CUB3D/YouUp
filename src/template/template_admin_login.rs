@@ -4,7 +4,7 @@ use actix_identity::Identity;
 use actix_web::post;
 use actix_web::web::Data;
 use actix_web::{HttpMessage, HttpRequest, get};
-use actix_web::{HttpResponse, Responder, web::Form};
+use actix_web::{HttpResponse, web::Form};
 use askama::Template;
 use serde::Deserialize;
 
@@ -32,8 +32,8 @@ pub struct LoginTemplate {
 pub async fn get_admin_login(
     id: Option<Identity>,
     settings: Data<PersistedSettings>,
-) -> impl Responder {
-    crate::settings::admin_password();
+) -> HttpResponse {
+    settings::admin_password();
 
     if id.is_logged_in() {
         println!("Already logged in, sending to dashboard");
@@ -58,10 +58,8 @@ pub struct LoginRequest {
 }
 
 #[post("/admin")]
-pub async fn post_admin_login(request: HttpRequest, form: Form<LoginRequest>) -> impl Responder {
-    if form.username == crate::settings::admin_username()
-        && form.password == crate::settings::admin_password()
-    {
+pub async fn post_admin_login(request: HttpRequest, form: Form<LoginRequest>) -> HttpResponse {
+    if form.username == settings::admin_username() && form.password == settings::admin_password() {
         Identity::login(&request.extensions(), "admin".into()).unwrap();
 
         return HttpResponse::PermanentRedirect()

@@ -5,6 +5,7 @@ use reqwest::Client;
 
 use crate::data::sms_subscription_repository::SmsSubscriberRepository;
 use crate::data::webhook_subscription_repository::WebhookSubscriberRepository;
+use crate::db;
 use crate::db::Database;
 use crate::notifications::mailer::Mailer;
 use crate::notifications::sms::SMSNotifier;
@@ -115,12 +116,11 @@ pub async fn check_domain_retry(c: &Client, domain: &Project) -> (Duration, Stat
     (dur, sc)
 }
 
-#[tracing::instrument(skip(db, webhook_subscription_repo, sms_subscription_repo))]
+#[tracing::instrument(skip(webhook_subscription_repo, sms_subscription_repo))]
 pub async fn run_update_job(
     mailer: Arc<Mailer>,
     sms: Arc<SMSNotifier>,
     webhook: Arc<WebhookNotifier>,
-    db: Database,
     sms_subscription_repo: SmsSubscriberRepository,
     webhook_subscription_repo: WebhookSubscriberRepository,
 ) {
@@ -129,6 +129,16 @@ pub async fn run_update_job(
     let c = Client::builder().build().unwrap();
 
     loop {
+        actix_rt::time::sleep(Duration::from_secs(90)).await;
+
+        let db = match db::get_db_connection() {
+            Ok(db) => db,
+            Err(e) => {
+                error!("Failed to get database, can't run update job: {e:?}");
+                continue;
+            }
+        };
+
         match db.get() {
             Ok(mut conn) => {
                 let projects_list = crate::schema::projects::dsl::projects
@@ -158,10 +168,12 @@ pub async fn run_update_job(
                         },
                     );
 
-                    if let Ok(stat) = most_recent_status {
-                        if let Some(stat2) = stat.first() {
-                            if stat2.is_success() && !status.is_success() {
-                                mailer.send_to_subscribers(
+                    if let Ok(stat) = most_recent_status
+                        && let Some(stat2) = stat.first()
+                        && stat2.is_success()
+                        && !status.is_success()
+                    {
+                        mailer.send_to_subscribers(
                                     &db,
                                     "YouUp <alerts@you-up.net>",
                                     format!("Alert in project '{}'", domain.name),
@@ -172,29 +184,27 @@ pub async fn run_update_job(
                                     ),
                                 );
 
-                                sms.notify_all_subscribers(
-                                    &sms_subscription_repo,
-                                    &format!(
-                                        "YouUp, Project '{}' down, code {}",
-                                        domain.name,
-                                        status.as_str()
-                                    ),
-                                )
-                                .await;
+                        sms.notify_all_subscribers(
+                            &sms_subscription_repo,
+                            &format!(
+                                "YouUp, Project '{}' down, code {}",
+                                domain.name,
+                                status.as_str()
+                            ),
+                        )
+                        .await;
 
-                                webhook
-                                    .notify_all_subscribers(
-                                        &webhook_subscription_repo,
-                                        WebhookPayload {
-                                            project_id: domain.id,
-                                            project_name: domain.name.clone(),
-                                            status_code: status.as_u16(),
-                                            time: Utc::now().format("%+").to_string(),
-                                        },
-                                    )
-                                    .await;
-                            }
-                        }
+                        webhook
+                            .notify_all_subscribers(
+                                &webhook_subscription_repo,
+                                WebhookPayload {
+                                    project_id: domain.id,
+                                    project_name: domain.name.clone(),
+                                    status_code: status.as_u16(),
+                                    time: Utc::now().format("%+").to_string(),
+                                },
+                            )
+                            .await;
                     }
                 }
             }
@@ -202,7 +212,5 @@ pub async fn run_update_job(
                 error!("Failed to get pool in update job {e:?}");
             }
         }
-
-        actix_rt::time::sleep(Duration::from_secs(90)).await;
     }
 }

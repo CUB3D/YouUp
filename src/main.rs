@@ -121,7 +121,6 @@ async fn main() -> std::io::Result<()> {
             mailer.clone(),
             sms.clone(),
             webhook.clone(),
-            db.clone(),
             Box::new(db.clone()) as Box<dyn SmsSubscriptionRepository>,
             Box::new(db.clone()) as Box<dyn WebhookSubscriptionRepository>,
         ));

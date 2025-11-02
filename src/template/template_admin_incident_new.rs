@@ -1,17 +1,17 @@
 use crate::data::incident_repository::IncidentRepositoryData;
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::db::Database;
-use crate::get_pool;
 use crate::models::{IncidentStatusType, NewIncident, NewIncidentStatusUpdate, Project};
 use crate::schema::incident_status_type::dsl::incident_status_type;
 use crate::schema::projects::dsl::projects;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
+use crate::{get_db, get_pool};
 use actix_identity::Identity;
 use actix_web::get;
 use actix_web::post;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder, web::Form};
+use actix_web::{HttpResponse, web::Form};
 use askama::Template;
 use diesel::RunQueryDsl;
 use serde::Deserialize;
@@ -37,7 +37,7 @@ pub struct ProjectUpdate {
 
 async fn admin_incidents_new(
     id: Option<Identity>,
-    pool: Data<Database>,
+    pool: Database,
     settings: Data<PersistedSettings>,
 ) -> HttpResponse {
     if !id.is_logged_in() {
@@ -72,11 +72,12 @@ async fn admin_incidents_new(
 #[get("/admin/incidents/new")]
 pub async fn get_admin_incidents_new(
     id: Option<Identity>,
-    pool: Data<Database>,
     settings: Data<PersistedSettings>,
-) -> impl Responder {
+) -> HttpResponse {
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin Incidents New GET", request_id = %request_id);
+
+    let pool = get_db!();
 
     admin_incidents_new(id, pool, settings)
         .instrument(span)
@@ -86,14 +87,15 @@ pub async fn get_admin_incidents_new(
 #[post("/admin/incidents/new")]
 pub async fn post_admin_incidents_new(
     id: Option<Identity>,
-    pool: Data<Database>,
     project_repo: ProjectRepositoryData,
     incident_repo: IncidentRepositoryData,
     settings: Data<PersistedSettings>,
     form_data: Form<ProjectUpdate>,
-) -> impl Responder {
+) -> HttpResponse {
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin Incidents New POST", request_id = %request_id);
+
+    let pool = get_db!();
 
     let project = match project_repo.get_project_by_name(&form_data.project) {
         Ok(project) => project,

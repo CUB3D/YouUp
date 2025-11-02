@@ -5,12 +5,12 @@ use crate::models::{EmailSubscription, SmsSubscription, WebhookSubscription};
 use crate::schema::email_subscriptions::dsl::email_subscriptions;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
-use crate::{get_pool, settings};
+use crate::{get_db, get_pool, settings};
 use actix_identity::Identity;
 use actix_web::get;
 use actix_web::post;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder, web::Form};
+use actix_web::{HttpResponse, web::Form};
 use askama::Template;
 use diesel::RunQueryDsl;
 use serde::Deserialize;
@@ -32,11 +32,11 @@ pub struct ProjectUpdate {}
 
 async fn admin_subscription(
     id: Option<Identity>,
-    pool: Data<Database>,
+    pool: Database,
     settings: Data<PersistedSettings>,
     sms_subscriptions_repo: SmsSubscriberRepositoryData,
     webhook_subscriptions_repo: WebhookSubscriberRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Admin subscription", request_id = %request_id);
     let _guard = span.enter();
@@ -69,11 +69,12 @@ async fn admin_subscription(
 #[get("/admin/subscriptions")]
 pub async fn get_admin_subscriptions(
     id: Option<Identity>,
-    pool: Data<Database>,
     settings: Data<PersistedSettings>,
     sms_subscriptions_repo: SmsSubscriberRepositoryData,
     webhook_subscriptions_repo: WebhookSubscriberRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
+    let pool = get_db!();
+
     admin_subscription(
         id,
         pool,
@@ -88,12 +89,13 @@ pub async fn get_admin_subscriptions(
 #[post("/admin/subscriptions")]
 pub async fn post_admin_subscriptions(
     id: Option<Identity>,
-    pool: Data<Database>,
     settings: Data<PersistedSettings>,
     _updates: Option<Form<ProjectUpdate>>,
     sms_subscriptions_repo: SmsSubscriberRepositoryData,
     webhook_subscriptions_repo: WebhookSubscriberRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
+    let pool = get_db!();
+
     admin_subscription(
         id,
         pool,

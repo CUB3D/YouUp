@@ -1,15 +1,15 @@
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::db::Database;
-use crate::get_pool;
 use crate::models::Project;
 use crate::schema::projects::dsl::projects;
 use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
+use crate::{get_db, get_pool};
 use actix_identity::Identity;
 use actix_web::get;
 use actix_web::post;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder, web::Form};
+use actix_web::{HttpResponse, web::Form};
 use askama::Template;
 use diesel::RunQueryDsl;
 use serde::Deserialize;
@@ -31,7 +31,7 @@ pub struct ProjectUpdate {
     enabled: Option<String>,
 }
 
-async fn admin_dashboard(pool: Data<Database>, settings: Data<PersistedSettings>) -> HttpResponse {
+async fn admin_dashboard(pool: Database, settings: Data<PersistedSettings>) -> HttpResponse {
     let mut pool = get_pool!(pool);
 
     let projects_list = projects
@@ -51,14 +51,15 @@ async fn admin_dashboard(pool: Data<Database>, settings: Data<PersistedSettings>
 #[get("/admin/dashboard")]
 pub async fn get_admin_dashboard(
     id: Option<Identity>,
-    pool: Data<Database>,
     settings: Data<PersistedSettings>,
-) -> impl Responder {
+) -> HttpResponse {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
             .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
+
+    let pool = get_db!();
 
     admin_dashboard(pool, settings).await
 }
@@ -66,12 +67,13 @@ pub async fn get_admin_dashboard(
 #[post("/admin/dashboard")]
 pub async fn post_admin_dashboard(
     id: Option<Identity>,
-    pool: Data<Database>,
     settings: Data<PersistedSettings>,
     updates: Form<ProjectUpdate>,
     project: ProjectRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
     let _span = tracing::info_span!("Admin Project Update", ?updates);
+
+    let pool = get_db!();
 
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()

@@ -38,9 +38,22 @@ pub fn get_db_connection() -> anyhow::Result<Database> {
 
     let manager = ConnectionManager::<MysqlConnection>::new(database_url);
 
-    diesel::r2d2::Pool::builder()
+    Pool::builder()
         .max_size(4)
         .test_on_check_out(true)
         .build(manager)
         .context("Cant create db pool")
+}
+
+#[macro_export]
+macro_rules! get_db {
+    () => {{
+        match $crate::db::get_db_connection() {
+            Ok(db) => db,
+            Err(e) => {
+                tracing::error!("Failed to get database, can't run update job: {e:?}");
+                return HttpResponse::InternalServerError().finish();
+            }
+        }
+    }};
 }

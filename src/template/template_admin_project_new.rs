@@ -1,9 +1,9 @@
 use crate::data::project_repository::ProjectRepositoryData;
 use crate::template::template_admin_login::AdminLogin;
 use actix_identity::Identity;
+use actix_web::HttpResponse;
 use actix_web::get;
 use actix_web::web::Query;
-use actix_web::{HttpResponse, Responder};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -15,7 +15,7 @@ async fn admin_project_new(
     id: Option<Identity>,
     projects: ProjectRepositoryData,
     new: ProjectNew,
-) -> impl Responder {
+) -> HttpResponse {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
             .append_header((http::header::LOCATION.as_str(), "/admin"))
@@ -34,7 +34,7 @@ pub async fn get_admin_project_new(
     id: Option<Identity>,
     new: Query<ProjectNew>,
     projects: ProjectRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
     let _span = tracing::info_span!("Admin Project New");
 
     admin_project_new(id, projects, new.0).await

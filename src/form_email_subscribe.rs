@@ -1,10 +1,10 @@
-use crate::db::Database;
+use crate::get_db;
 use crate::models::{EmailSubscription, NewEmailSubscription};
 use crate::notifications::mailer::Mailer;
 use actix_web::get;
 use actix_web::post;
 use actix_web::web::{Data, Query};
-use actix_web::{HttpResponse, Responder, web::Form};
+use actix_web::{HttpResponse, web::Form};
 use askama::Template;
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
 use lettre::Message;
@@ -27,15 +27,16 @@ pub struct EmailSubscribeRequest {
 
 #[post("/subscribe/email")]
 pub async fn post_email_subscribe(
-    db: Data<Database>,
     mailer: Data<Arc<Mailer>>,
     form: Form<EmailSubscribeRequest>,
-) -> impl Responder {
+) -> HttpResponse {
     use crate::schema::email_subscriptions;
 
     let request_id = Uuid::new_v4();
     let span = tracing::info_span!("Email subscribe", request_id = %request_id);
     let _span_guard = span.enter();
+
+    let db = get_db!();
 
     let parsed_email = form.email.clone().parse::<Mailbox>();
 
@@ -69,9 +70,9 @@ pub async fn post_email_subscribe(
 
         mailer.send_message(email);
 
-        HttpResponse::Ok()
+        HttpResponse::Ok().finish()
     } else {
-        HttpResponse::BadRequest()
+        HttpResponse::BadRequest().finish()
     }
 }
 
@@ -82,15 +83,14 @@ pub struct ConfirmSubscription {
 }
 
 #[get("/subscribe/email/confirm")]
-pub async fn get_email_confirm(
-    db: Data<Database>,
-    form: Query<ConfirmSubscription>,
-) -> impl Responder {
+pub async fn get_email_confirm(form: Query<ConfirmSubscription>) -> HttpResponse {
     use crate::schema::email_subscriptions;
 
     //TODO: add a tracking id (uuid?)
     let span = tracing::info_span!("Email subscribe confirm, id = {}", form.id);
     let _span_guard = span.enter();
+
+    let db = get_db!();
 
     diesel::update(email_subscriptions::table.filter(email_subscriptions::dsl::id.eq(form.id)))
         .set(email_subscriptions::dsl::confirmed.eq(true))
@@ -99,5 +99,5 @@ pub async fn get_email_confirm(
 
     tracing::info!("Confirmed subscription id={}", form.id);
 
-    HttpResponse::Ok()
+    HttpResponse::Ok().finish()
 }

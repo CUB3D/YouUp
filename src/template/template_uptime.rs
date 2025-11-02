@@ -7,7 +7,7 @@ use crate::template::template_admin_login::AdminLogin;
 use crate::time_utils::get_days_from_month;
 use actix_identity::Identity;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder, get};
+use actix_web::{HttpResponse, get};
 use askama::Template;
 use chrono::{Datelike, Utc};
 use std::ops::Sub;
@@ -35,7 +35,7 @@ pub async fn get_uptime(
     status_repo: StatusRepositoryData,
     settings: Data<PersistedSettings>,
     identity: Option<Identity>,
-) -> impl Responder {
+) -> HttpResponse {
     let projects = match projects_repo.get_all_enabled_projects() {
         Ok(projects) => projects,
         Err(err) => {

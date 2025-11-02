@@ -1,10 +1,10 @@
 use crate::data::incident_repository::IncidentRepositoryData;
+use actix_web::HttpResponse;
 use actix_web::get;
-use actix_web::{HttpResponse, Responder};
 use chrono::{TimeZone, Utc};
 use rss::{ChannelBuilder, GuidBuilder, ItemBuilder};
 
-async fn rss_feed(incidents: IncidentRepositoryData) -> impl Responder {
+async fn rss_feed(incidents: IncidentRepositoryData) -> HttpResponse {
     let items = incidents
         .get_all_incidents()
         .iter()
@@ -53,6 +53,6 @@ async fn rss_feed(incidents: IncidentRepositoryData) -> impl Responder {
 }
 
 #[get("/feed/rss")]
-pub async fn get_rss_feed(pool: IncidentRepositoryData) -> impl Responder {
+pub async fn get_rss_feed(pool: IncidentRepositoryData) -> HttpResponse {
     rss_feed(pool).await
 }

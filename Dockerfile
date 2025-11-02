@@ -7,7 +7,10 @@ ADD ./src/ ./src/
 ADD ./static ./static/
 ADD ./templates ./templates/
 ADD Cargo.toml .
+ADD rust-toolchain.toml .
 
 RUN cargo build --release
+
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -f http://localhost:8080/ || exit 1
 
 CMD ["cargo", "run", "--release"]

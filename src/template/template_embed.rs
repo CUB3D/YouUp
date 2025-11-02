@@ -3,9 +3,9 @@ use crate::data::status_repository::StatusRepositoryData;
 use crate::settings;
 use crate::template::index::status_day::StatusDay;
 use crate::template::index::template_index::{ProjectStatus, compute_downtime_periods};
+use actix_web::HttpResponse;
 use actix_web::get;
 use actix_web::web::Path;
-use actix_web::{HttpResponse, Responder};
 use askama::Template;
 use chrono::{Timelike, Utc};
 use std::convert::TryInto;
@@ -26,7 +26,7 @@ pub async fn get_embed(
     id: Path<(i32,)>,
     projects: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
-) -> impl Responder {
+) -> HttpResponse {
     if let Some(proj) = projects.get_project_by_id(id.as_ref().0) {
         let status_list: Vec<_> = status_repo.get_status_last_30_days();
         let history_size = settings::get_history_size();

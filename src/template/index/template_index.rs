@@ -11,10 +11,10 @@ use crate::settings::{CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSetting
 use crate::template::index::downtime::Downtime;
 use crate::template::index::status_day::StatusDay;
 use crate::template::template_admin_login::AdminLogin;
-use crate::{get_pool, settings, time_formatter};
+use crate::{get_db, get_pool, settings, time_formatter};
 use actix_identity::Identity;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder, get, head};
+use actix_web::{HttpResponse, get, head};
 use askama::Template;
 use chrono::{Duration, NaiveDateTime, Timelike, Utc};
 use diesel::dsl::sql;
@@ -139,7 +139,7 @@ pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime>
 }
 
 pub async fn root(
-    pool: Data<Database>,
+    pool: Database,
     settings: Data<PersistedSettings>,
     projects_repo: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
@@ -364,16 +364,16 @@ mod test {
 
 #[get("/")]
 pub async fn get_index(
-    pool: Data<Database>,
     settings: Data<PersistedSettings>,
     projects_repo: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
     identity: Option<Identity>,
 ) -> HttpResponse {
+    let pool = get_db!();
     root(pool, settings, projects_repo, status_repo, identity).await
 }
 
 #[head("/")]
-pub async fn head_index() -> impl Responder {
+pub async fn head_index() -> HttpResponse {
     HttpResponse::Ok().finish()
 }

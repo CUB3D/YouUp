@@ -1,11 +1,11 @@
 use crate::data::incident_repository::IncidentRepositoryData;
+use actix_web::HttpResponse;
 use actix_web::get;
-use actix_web::{HttpResponse, Responder};
 use atom_syndication::{ContentBuilder, EntryBuilder, FeedBuilder, LinkBuilder};
 use chrono::{Offset, TimeZone, Utc};
 use uuid::Uuid;
 
-async fn atom_feed(incidents: IncidentRepositoryData) -> impl Responder {
+async fn atom_feed(incidents: IncidentRepositoryData) -> HttpResponse {
     let entries = incidents
         .get_all_incidents()
         .iter()
@@ -55,6 +55,6 @@ async fn atom_feed(incidents: IncidentRepositoryData) -> impl Responder {
 }
 
 #[get("/feed/atom")]
-pub async fn get_atom_feed(pool: IncidentRepositoryData) -> impl Responder {
+pub async fn get_atom_feed(pool: IncidentRepositoryData) -> HttpResponse {
     atom_feed(pool).await
 }
