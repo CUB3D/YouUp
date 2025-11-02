@@ -182,7 +182,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(
                 SessionMiddleware::builder(
                     CookieSessionStore::default(),
-                    Key::try_from(settings::private_key().as_slice()).expect("Invalid PRIVATE_KEY, must be 64 bytes"),
+                    Key::try_from(settings::private_key().as_slice())
+                        .expect("Invalid PRIVATE_KEY, must be 64 bytes"),
                 )
                 .cookie_name("you-up-auth".to_string())
                 .cookie_secure(!settings::insecure())
