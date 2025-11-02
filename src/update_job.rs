@@ -101,9 +101,9 @@ pub async fn check_domain_retry(c: &Client, domain: &Project) -> (Duration, Stat
             actix_rt::time::sleep(Duration::from_secs(45)).await;
 
             // If one of these is success then maybe we just dropped a packet
-            let (ndur, nsc) = check_domain(c, domain).await;
+            let (new_dur, nsc) = check_domain(c, domain).await;
             if nsc.is_success() {
-                dur = ndur;
+                dur = new_dur;
                 sc = nsc;
                 break;
             }

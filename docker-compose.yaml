@@ -9,13 +9,15 @@ services:
      RUST_LOG: info
      DATABASE_URL: "mysql://root:ChangeMe@mariadb:3306/youup"
      HISTORY_SIZE: 5
+     PRIVATE_KEY: 1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf
    restart: unless-stopped
-   links:
-    - mariadb
+   networks:
+     - youup-net
+   depends_on:
+     - mariadb
 
   mariadb:
     image: mariadb:11.4
-    network_mode: host
     volumes:
       - mariadb_data:/var/lib/mysql
     environment:
@@ -23,6 +25,9 @@ services:
       - MARIADB_DATABASE=youup
     ports:
       - "3306:3306"
-
+    networks:
+      - youup-net
+networks:
+  youup-net:
 volumes:
   mariadb_data:

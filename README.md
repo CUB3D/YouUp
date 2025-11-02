@@ -6,7 +6,7 @@
 ![Screenshot](./doc/demo.png)
 
 ### Try it out
-Current git master -> [here](https://status.cub3d.pw)
+Current git master → [here](https://status.cub3d.pw)
 
 ### Running with docker-compose
 ```yaml

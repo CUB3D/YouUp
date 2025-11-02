@@ -37,6 +37,7 @@
                 {% if proj_status.project.description.is_some() %}
                 <img class="ml-1 mr-1" src="/static/images/help-circle.svg" width="24px" height="24px"
                      data-toggle="tooltip" data-placement="top" data-html="true"
+                     alt="Help icon"
                      title="{{ proj_status.project.description.as_ref().unwrap() }}"/>
                 {% endif %}
                 <div class="mr-auto"></div>

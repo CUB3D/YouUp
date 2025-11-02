@@ -133,7 +133,6 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
-            .app_data(Data::new(db.clone()))
             .app_data(Data::new(Box::new(db.clone()) as Box<dyn ProjectRepository>))
             .app_data(Data::new(
                 Box::new(db.clone()) as Box<dyn IncidentRepository>
@@ -183,7 +182,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(
                 SessionMiddleware::builder(
                     CookieSessionStore::default(),
-                    Key::from(&settings::private_key()),
+                    Key::try_from(settings::private_key().as_slice()).expect("Invalid PRIVATE_KEY, must be 64 bytes"),
                 )
                 .cookie_name("you-up-auth".to_string())
                 .cookie_secure(!settings::insecure())
