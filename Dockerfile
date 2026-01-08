@@ -11,6 +11,6 @@ ADD rust-toolchain.toml .
 
 RUN cargo build --release
 
-HEALTHCHECK --interval=30s --timeout=3s CMD curl -X HEAD -f http://localhost:8080/ || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD curl -X HEAD -f http://localhost:8102/ || exit 1
 
 CMD ["cargo", "run", "--release"]
