@@ -19,6 +19,8 @@ pub fn get_db_connection() -> anyhow::Result<Database> {
     let database_url = env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
 
     let mut conn;
+
+    let mut retry = 0;
     loop {
         match MysqlConnection::establish(&database_url) {
             Ok(x) => {
@@ -26,11 +28,14 @@ pub fn get_db_connection() -> anyhow::Result<Database> {
                 break;
             }
             Err(e) => {
-                warn!("Error connecting to {}", database_url);
-                error!("{:?}", e);
+                error!("Error connecting to '{database_url}': {e:?}")
             }
         }
-        std::thread::sleep(Duration::from_secs(1));
+        std::thread::sleep(Duration::from_secs(10));
+        retry += 1;
+        if retry > 3 {
+            return Err(anyhow::anyhow!("Failed to get db connection"));
+        }
     }
 
     conn.run_pending_migrations(MIGRATIONS)

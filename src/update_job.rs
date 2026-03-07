@@ -1,6 +1,6 @@
 use crate::models::{NewStatus, Project, Status};
 
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl};
+use diesel::{ExpressionMethods, MysqlConnection, QueryDsl, RunQueryDsl};
 use reqwest::Client;
 
 use crate::data::sms_subscription_repository::SmsSubscriberRepository;
@@ -12,6 +12,7 @@ use crate::notifications::sms::SMSNotifier;
 use crate::notifications::webhook::{WebhookNotifier, WebhookPayload};
 use crate::schema::status as stat;
 use chrono::Utc;
+use diesel::r2d2::{ConnectionManager, PooledConnection};
 use http::StatusCode;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
@@ -23,29 +24,28 @@ lazy_static! {
     static ref PENDING_STATUS_UPDATES: Mutex<Vec<NewStatus>> = Mutex::new(Vec::new());
 }
 
-#[tracing::instrument(skip(db))]
-pub fn submit_status(db: Database, status: NewStatus) {
-    match db.get() {
-        Ok(mut conn) => {
-            match diesel::insert_into(stat::table)
-                .values(status.clone())
-                .execute(&mut conn)
-            {
-                Ok(_) => {}
-                Err(_) => {
-                    error!("Failed to insert {status:?} into db");
-                    if let Ok(mut lock) = PENDING_STATUS_UPDATES.lock() {
-                        lock.deref_mut().push(status)
-                    } else {
-                        error!("Failed to lock pending queue");
-                    }
-                }
+#[tracing::instrument(skip(conn))]
+pub fn submit_status(
+    conn: &mut PooledConnection<ConnectionManager<MysqlConnection>>,
+    status: NewStatus,
+) -> anyhow::Result<()> {
+    match diesel::insert_into(stat::table)
+        .values(status.clone())
+        .execute(conn)
+    {
+        Ok(_) => {}
+        Err(_) => {
+            error!("Failed to insert {status:?} into db");
+            if let Ok(mut lock) = PENDING_STATUS_UPDATES.lock() {
+                lock.deref_mut().push(status)
+            } else {
+                error!("Failed to lock pending queue");
+                return Err(anyhow::anyhow!("Failed to lock pending queue"));
             }
         }
-        Err(e) => {
-            error!("Failed to get pool in submit {e:?}");
-        }
     }
+
+    Ok(())
 }
 
 #[tracing::instrument(skip(db))]
@@ -116,7 +116,13 @@ pub async fn check_domain_retry(c: &Client, domain: &Project) -> (Duration, Stat
     (dur, sc)
 }
 
-#[tracing::instrument(skip(webhook_subscription_repo, sms_subscription_repo))]
+#[tracing::instrument(skip(
+    mailer,
+    sms,
+    webhook,
+    webhook_subscription_repo,
+    sms_subscription_repo
+))]
 pub async fn run_update_job(
     mailer: Arc<Mailer>,
     sms: Arc<SMSNotifier>,
@@ -135,15 +141,21 @@ pub async fn run_update_job(
             Ok(db) => db,
             Err(e) => {
                 error!("Failed to get database, can't run update job: {e:?}");
+                actix_rt::time::sleep(Duration::from_secs(120)).await;
                 continue;
             }
         };
 
         match db.get() {
             Ok(mut conn) => {
-                let projects_list = crate::schema::projects::dsl::projects
-                    .load::<Project>(&mut conn)
-                    .expect("Unable to load projects");
+                let projects_list =
+                    match crate::schema::projects::dsl::projects.load::<Project>(&mut conn) {
+                        Ok(p) => p,
+                        Err(e) => {
+                            error!("Failed to get projects, can't run update job: {e:?}");
+                            continue;
+                        }
+                    };
 
                 for domain in &projects_list {
                     tracing::info!("Checking {}", domain.name);
@@ -156,17 +168,22 @@ pub async fn run_update_job(
                         .filter(stat::dsl::project.eq(domain.id))
                         .order_by(stat::dsl::created.desc())
                         .limit(1)
-                        .load::<Status>(&mut db.get().unwrap());
+                        .load::<Status>(&mut conn);
 
-                    submit_status(
-                        db.clone(),
+                    match submit_status(
+                        &mut conn,
                         NewStatus {
                             project: domain.id,
                             //TODO: change the type of this field
                             time: req_duration.as_millis() as i32,
                             status_code: status.as_u16() as i32,
                         },
-                    );
+                    ) {
+                        Ok(_) => {}
+                        Err(_) => {
+                            continue;
+                        }
+                    }
 
                     if let Ok(stat) = most_recent_status
                         && let Some(stat2) = stat.first()
