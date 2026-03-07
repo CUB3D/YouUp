@@ -2,7 +2,7 @@ use crate::db::Database;
 use crate::diesel::RunQueryDsl;
 use crate::models::Setting;
 use diesel::{ExpressionMethods, QueryDsl};
-use rand::Rng;
+use rand::RngExt;
 use rand::distr::Alphanumeric;
 use std::env;
 use std::ops::Deref;
