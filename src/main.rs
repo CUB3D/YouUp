@@ -82,12 +82,9 @@ async fn main() -> std::io::Result<()> {
 
     let _guard = sentry::init((
         "https://c2d3ab1d150243ce9a828d92d5a77452@o289707.ingest.sentry.io/6486846",
-        sentry::ClientOptions {
-            // Set this to a lower value in production
-            traces_sample_rate: 1.0,
-            release: sentry::release_name!(),
-            ..sentry::ClientOptions::default()
-        },
+        sentry::ClientOptions::new()
+            .release(sentry::release_name!().unwrap())
+            .traces_sample_rate(1.0),
     ));
 
     let sentry_layer = sentry_tracing::layer().event_filter(|md| match md.level() {

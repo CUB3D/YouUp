@@ -7,33 +7,34 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-actix-rt = "=2.11.0"
-actix-web = "=4.13.0"
-actix-files = "=0.6.10"
+actix-rt = "=2.13.0"
+actix-web = "=4.15.0"
+actix-files = "=0.7.0"
 actix-identity = "=0.9.0"
 actix-session = { version = "=0.11.0", features = ["cookie-session"] }
-http = "=1.4.0"
-rand = "=0.10.0"
-serde = { version = "=1.0.228", features = ["derive"] }
-askama = "=0.15.4"
-chrono = "=0.4.44"
-diesel = { version = "=2.3.6", features = ["r2d2", "mysql", "chrono"] }
+http = "=1.5.0"
+rand = "=0.10.2"
+serde = { version = "=1.0.229", features = ["derive"] }
+askama = "=0.16.1"
+chrono = "=0.4.45"
+diesel = { version = "=2.3.13", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "=2.3.1"
 dotenv = "=0.15.0"
-reqwest = { version = "=0.13.2", features = ["gzip", "json"]}
-lettre = { version = "=0.11.19", features = ["smtp-transport"] }
+reqwest = { version = "=0.13.4", features = ["gzip", "json"]}
+lettre = { version = "=0.11.23", features = ["smtp-transport"] }
 lazy_static = "=1.5.0"
 tracing = "=0.1.44"
 tracing-futures = "=0.2.5"
-tracing-subscriber = { version = "=0.3.22", features = ["env-filter"] }
-sentry-tracing = "=0.46.2"
-sentry = "=0.46.2"
-uuid = { version = "=1.22.0", features = ["v4"] }
-rss = { version = "=2.0.12", features = ["builders"] }
+tracing-subscriber = { version = "=0.3.23", features = ["env-filter"] }
+sentry-tracing = "=0.49.2"
+sentry = "=0.49.2"
+uuid = { version = "=1.26.0", features = ["v4"] }
+rss = { version = "=2.1.1", features = ["builders"] }
 escaper = "=0.1.1"
-atom_syndication = { version = "=0.12.7", features = ["builders"] }
+atom_syndication = { version = "=0.12.10", features = ["builders"] }
 twilio = "=1.1.0"
-anyhow = "=1.0.102"
+anyhow = "=1.0.104"
+constant_time_eq = "=0.6.0"
 
 [profile.release]
 debug = true

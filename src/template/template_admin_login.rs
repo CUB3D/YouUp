@@ -57,9 +57,18 @@ pub struct LoginRequest {
     pub password: String,
 }
 
+fn const_compare(a: &str, b: &str) -> bool {
+    if a.len() != b.len() {
+        return false;
+    }
+    constant_time_eq::constant_time_eq(a.as_bytes(), b.as_bytes())
+}
+
 #[post("/admin")]
 pub async fn post_admin_login(request: HttpRequest, form: Form<LoginRequest>) -> HttpResponse {
-    if form.username == settings::admin_username() && form.password == settings::admin_password() {
+    if const_compare(&form.username, &settings::admin_username())
+        && const_compare(&form.password, &settings::admin_password())
+    {
         Identity::login(&request.extensions(), "admin".into()).unwrap();
 
         return HttpResponse::PermanentRedirect()
