@@ -22,7 +22,7 @@ diesel_migrations = "=2.3.1"
 dotenv = "=0.15.0"
 reqwest = { version = "=0.13.4", features = ["gzip", "json"]}
 lettre = { version = "=0.11.23", features = ["smtp-transport"] }
-lazy_static = "=1.5.0"
+lazy_static = "=1.5.1"
 tracing = "=0.1.44"
 tracing-futures = "=0.2.5"
 tracing-subscriber = { version = "=0.3.23", features = ["env-filter"] }
