@@ -20,7 +20,7 @@ chrono = "=0.4.45"
 diesel = { version = "=2.3.13", features = ["r2d2", "mysql", "chrono"] }
 diesel_migrations = "=2.3.2"
 dotenv = "=0.15.0"
-reqwest = { version = "=0.13.4", features = ["gzip", "json"]}
+reqwest = { version = "=0.13.5", features = ["gzip", "json"]}
 lettre = { version = "=0.11.23", features = ["smtp-transport"] }
 lazy_static = "=1.5.1"
 tracing = "=0.1.44"
