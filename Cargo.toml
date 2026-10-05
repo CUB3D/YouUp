@@ -34,7 +34,7 @@ escaper = "=0.1.1"
 atom_syndication = { version = "=0.12.10", features = ["builders"] }
 twilio = "=1.1.0"
 anyhow = "=1.0.104"
-constant_time_eq = "=0.6.0"
+constant_time_eq = "=0.6.1"
 
 [profile.release]
 debug = true
