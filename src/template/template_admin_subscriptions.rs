@@ -85,7 +85,6 @@ pub async fn get_admin_subscriptions(
     .await
 }
 
-//TODO: is this needed
 #[post("/admin/subscriptions")]
 pub async fn post_admin_subscriptions(
     id: Option<Identity>,

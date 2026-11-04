@@ -3,7 +3,7 @@ use crate::data::status_repository::StatusRepositoryData;
 
 use crate::models::Project;
 
-use crate::settings::{PersistedSettings, CUSTOM_SCRIPT, CUSTOM_STYLE};
+use crate::settings::{CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
 use crate::template::template_admin_login::AdminLogin;
 use actix_identity::Identity;
 use actix_web::get;

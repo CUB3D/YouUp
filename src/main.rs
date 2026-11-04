@@ -46,12 +46,13 @@ use actix_session::SessionMiddleware;
 use actix_session::config::CookieContentSecurity;
 use actix_session::storage::CookieSessionStore;
 use actix_web::cookie::{Key, SameSite};
-use sentry_tracing::EventFilter;
+use sentry_tracing::{ErrorLayer, SpanLayer};
 use std::env;
 use std::sync::Arc;
 use template::template_admin_project_new::get_admin_project_new;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
+use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
@@ -75,8 +76,8 @@ pub mod time_formatter;
 pub mod time_utils;
 pub mod update_job;
 pub mod utils;
+
 //TODO: REST API
-//TODO: twitter
 //TODO: make sentry optional
 
 #[actix_web::main]
@@ -90,11 +91,6 @@ async fn main() -> std::io::Result<()> {
             .traces_sample_rate(1.0),
     ));
 
-    let sentry_layer = sentry_tracing::layer().event_filter(|md| match md.level() {
-        &tracing::Level::ERROR => EventFilter::Event,
-        _ => EventFilter::Ignore,
-    });
-
     {
         let temp = tracing_subscriber::fmt::fmt()
             .with_env_filter(
@@ -105,7 +101,9 @@ async fn main() -> std::io::Result<()> {
             .finish();
 
         if settings::sentry_enabled() {
-            temp.with(sentry_layer).init();
+            temp.with(SpanLayer::new().with_filter(LevelFilter::INFO))
+                .with(ErrorLayer::new().with_filter(LevelFilter::ERROR))
+                .init();
         } else {
             temp.init();
         }

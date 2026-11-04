@@ -34,7 +34,6 @@ async fn rss_feed(incidents: IncidentRepositoryData) -> HttpResponse {
                 .content(escaper::encode_minimal(&description))
                 .link(url)
                 .guid(guid)
-                //todo:  Can 2822 be used as a drop in replacement for 822?
                 .pub_date(Utc.from_utc_datetime(&incident.created).to_rfc2822())
                 .build()
         })
