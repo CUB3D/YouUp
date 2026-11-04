@@ -37,7 +37,7 @@ pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime>
         }];
     }
 
-    let mut downtime = Vec::new();
+    let mut downtime = Vec::with_capacity(status_on_day.len());
     let mut downtime_period_start: Option<NaiveDateTime> = status_on_day
         .first()
         .map(|e| Some(e.created))
@@ -63,7 +63,7 @@ pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime>
         }
     }
     if let Some(tmp) = downtime_period_start {
-        // If it was still down at the last reading of the day then assume it was down for all of the rest of that day
+        // If it was still down at the last reading of the day then assume it was down for the rest of that entire day
 
         let time_of_first_request = status_on_day.first().map(|s| s.created).unwrap();
 

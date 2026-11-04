@@ -54,7 +54,6 @@ use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use crate::template::template_admin_project_details::{get_admin_project_details, post_admin_project_details};
 
 #[macro_use]
 extern crate diesel;

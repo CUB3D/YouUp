@@ -8,13 +8,10 @@ use crate::project_status::ProjectStatusTypes;
 use crate::schema::incidents::dsl::incidents;
 use crate::schema::{incident_status_type, incident_status_update};
 use crate::settings::{CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE, PersistedSettings};
-use crate::template::index::downtime::Downtime;
-use crate::settings;
-use crate::settings::{PersistedSettings, CUSTOM_HTML, CUSTOM_SCRIPT, CUSTOM_STYLE};
-use crate::template::index::downtime::compute_downtime_periods;
+use crate::template::index::downtime::{compute_downtime_periods};
 use crate::template::index::status_day::StatusDay;
 use crate::template::template_admin_login::AdminLogin;
-use crate::{get_db, get_pool, settings, time_formatter};
+use crate::{get_db, get_pool, settings};
 use actix_identity::Identity;
 use actix_web::web::Data;
 use actix_web::{HttpResponse, get, head};
@@ -57,89 +54,6 @@ pub struct ProjectStatus {
     pub today: StatusDay,
 }
 
-pub async fn compute_downtime_periods(status_on_day: &[Status]) -> Vec<Downtime> {
-    if !status_on_day.is_empty() && status_on_day.iter().all(|s| !s.is_success()) {
-        let first_day = status_on_day.first().unwrap().created;
-
-        // Get 00:00:00 on the next day
-        let end_of_first_day = first_day
-            .checked_add_signed(Duration::days(1))
-            .unwrap()
-            .with_hour(0)
-            .unwrap()
-            .with_minute(0)
-            .unwrap()
-            .with_second(0)
-            .unwrap();
-
-        // Find the duration between the last point that we have info about and the first point
-        // If the end of the day is in the future, then this downtime occurs today, and we will state that it is down until now
-        // If this day is in the past then we will assume it was down for the rest of the day
-        //TODO: we might want to check when it's up the next day
-        // also might want to look back to before the first result of the day?
-        let duration = Utc::now()
-            .naive_utc()
-            .min(end_of_first_day)
-            .signed_duration_since(first_day);
-
-        return vec![Downtime {
-            duration: time_formatter::format_duration(&duration),
-        }];
-    }
-
-    let mut downtime = Vec::with_capacity(status_on_day.len());
-    let mut downtime_period_start: Option<NaiveDateTime> = status_on_day
-        .first()
-        .map(|e| Some(e.created))
-        .unwrap_or(None);
-
-    for item in status_on_day.iter() {
-        if item.is_success() {
-            if let Some(tmp) = downtime_period_start {
-                let period_duration = tmp.signed_duration_since(item.created);
-
-                if period_duration.num_minutes() > settings::get_minimum_downtime_minutes() {
-                    downtime.push(Downtime {
-                        duration: time_formatter::format_duration(&period_duration),
-                    });
-                }
-                downtime_period_start = None;
-            }
-        } else {
-            // If we are currently down then we will skip until we find the next up
-            if downtime_period_start.is_none() {
-                downtime_period_start = Some(item.created)
-            }
-        }
-    }
-    if let Some(tmp) = downtime_period_start {
-        // If it was still down at the last reading of the day then assume it was down for the rest of that entire day
-
-        let time_of_first_request = status_on_day.first().map(|s| s.created).unwrap();
-
-        let end_of_day = time_of_first_request
-            .checked_add_signed(Duration::days(1))
-            .unwrap()
-            .with_hour(0)
-            .unwrap()
-            .with_minute(0)
-            .unwrap()
-            .with_second(0)
-            .unwrap();
-
-        // If this day was in the past then take its end_of_day however if we are considering today then define the end to be the current time
-        let clamped_end_of_day = end_of_day.min(Utc::now().naive_utc());
-
-        let period_duration = clamped_end_of_day.signed_duration_since(tmp);
-        if period_duration.num_minutes() > settings::get_minimum_downtime_minutes() {
-            downtime.push(Downtime {
-                duration: time_formatter::format_duration(&period_duration),
-            });
-        }
-    }
-
-    downtime
-}
 
 pub async fn root(
     pool: Database,

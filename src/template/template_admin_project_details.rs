@@ -26,7 +26,7 @@ pub struct ProjectDetailsTemplate {
 pub struct ProjectUpdate {}
 
 async fn admin_project_details(
-    id: Identity,
+    id: Option<Identity>,
     path: Path<(i32,)>,
     project: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
@@ -34,14 +34,14 @@ async fn admin_project_details(
 ) -> impl Responder {
     if !id.is_logged_in() {
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/admin")
+            .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
 
-    let project = project.get_project_by_id(path.0 .0);
+    let project = project.get_project_by_id(path.0);
     if project.is_none() {
         return HttpResponse::PermanentRedirect()
-            .header(http::header::LOCATION, "/admin/dashboard")
+            .append_header((http::header::LOCATION.as_str(), "/admin"))
             .finish();
     }
     let project = project.unwrap();
@@ -67,7 +67,7 @@ async fn admin_project_details(
 
 #[get("/admin/project/{id}")]
 pub async fn get_admin_project_details(
-    id: Identity,
+    id: Option<Identity>,
     path: Path<(i32,)>,
     project: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
@@ -78,7 +78,7 @@ pub async fn get_admin_project_details(
 
 #[post("/admin/projects/{id}")]
 pub async fn post_admin_project_details(
-    id: Identity,
+    id: Option<Identity>,
     path: Path<(i32,)>,
     project: ProjectRepositoryData,
     status_repo: StatusRepositoryData,
