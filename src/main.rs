@@ -92,20 +92,20 @@ async fn main() -> std::io::Result<()> {
     ));
 
     {
-        let temp = tracing_subscriber::fmt::fmt()
-            .with_env_filter(
-                EnvFilter::builder()
-                    .with_default_directive(LevelFilter::INFO.into())
-                    .from_env_lossy(),
-            )
-            .finish();
+        let temp = tracing_subscriber::fmt::layer().with_filter(
+            EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .from_env_lossy(),
+        );
 
         if settings::sentry_enabled() {
-            temp.with(SpanLayer::new().with_filter(LevelFilter::INFO))
+            tracing_subscriber::registry()
+                .with(temp)
+                .with(SpanLayer::new().with_filter(LevelFilter::INFO))
                 .with(ErrorLayer::new().with_filter(LevelFilter::ERROR))
                 .init();
         } else {
-            temp.init();
+            tracing_subscriber::registry().with(temp).init();
         }
     }
 

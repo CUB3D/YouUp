@@ -10,6 +10,7 @@ services:
      DATABASE_URL: "mysql://root:ChangeMe@mariadb:3306/youup"
      HISTORY_SIZE: 5
      PRIVATE_KEY: 1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf1234asdf
+     SENTRY: true
    restart: unless-stopped
    networks:
      - youup-net
