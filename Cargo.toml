@@ -18,6 +18,8 @@ serde = { version = "=1.0.229", features = ["derive"] }
 askama = "=0.16.1"
 chrono = "=0.4.45"
 diesel = { version = "=2.4.0", features = ["r2d2", "mysql", "chrono"] }
+mysqlclient-sys = { version = "=0.5.3", features = ["bundled"] }
+openssl-sys = { version = "0.9.118", features = ["vendored"] }
 diesel_migrations = "=2.4.0"
 dotenv = "=0.15.0"
 reqwest = { version = "=0.13.5", features = ["gzip", "json"]}
